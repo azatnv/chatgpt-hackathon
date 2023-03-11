@@ -1,3 +1,5 @@
 .env
 __pycache__
 telegram_bot
+.venv
+.idea/
