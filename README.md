@@ -1,8 +1,8 @@
-# ChatGPT Hackathon
+# ChatGPT Hackathon: "Мероприятия ИТМО"
 
 История о том как мы сделали сервис для ИТМО за 2 дня
 
-[LevartBot](https://t.me/LevartTestBot)- бот, с помощью которого можно отслеживать предстоящие мероприятия.
+[@LevartBot](https://t.me/LevartTestBot) - бот, с помощью которого можно отслеживать предстоящие мероприятия.
 
 ### Команда:
 
@@ -13,29 +13,10 @@
 - Siraj (https://t.me/sirajfarhan)
 
 
-
-Getting started:
-1. pip install -r requirements.txt
-
-Project tree:
-
-inline_buttons
-    |
-    |---> __init__.py
-    |---> inline_buttons.py - определяем кнопки
-    |
-utils.py - функции дат
-    |
-main.py - функции, вызываемые ботом
-    |
-telegram_bot.py - логика бота
-
-
 Доступные функции:
-1. Мероприятия на текущую неделю
-2. Мероприятия на следующую неделю
-3. Список сообществ с мероприятиями
+1. Ближайшие мероприятия ИТМО
+2. Мероприятия ИТМО на следующую неделю
+3. Список источников мероприятий
 
 
-
-Bot Telegram Link: @LevartTestBot
+Bot Telegram Link: [@LevartTestBot](https://t.me/LevartTestBot)
