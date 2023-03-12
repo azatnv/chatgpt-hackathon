@@ -76,11 +76,14 @@ async def send_tree_nearest_events(message):
 @bot.message_handler(regexp=r"^Источники")
 async def send_groups_info(message):
     communities = all_groups
-    communities_list = "\n".join([i[0] for i in communities])
+    communities_list = []
+    for i in communities:
+        communities_text = f"🌐{i[0]}"
+        communities_list.append(communities_text)
+    communities_text = "\n".join(communities_list)
     await bot.send_message(
         message.chat.id,
-        f"На данный момент нам доступны сообщества:\n{communities_list}",
-        reply_markup=link_to_menu_keyboard
+        f"На данный момент нам доступны сообщества:\n\n{communities_text}"
     )
 
 
