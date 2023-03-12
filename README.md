@@ -1,12 +1,18 @@
-История о том как мы сделали сервис для ИТМО за 2 дня.
-Команда:
-@azat_nv
-@Sashadupak
-@isamosssa
-@nikitosqq
+# ChatGPT Hackathon
+
+История о том как мы сделали сервис для ИТМО за 2 дня
+
+[LevartBot](https://t.me/LevartTestBot)- бот, с помощью которого можно отслеживать предстоящие мероприятия.
+
+### Команда:
+
+- Alexander Dupak (https://t.me/Sashadupak)
+- Ivan Samosevich (https://t.me/isamosssa)
+- Azat Sibagatulin (https://t.me/isamosssa)
+- Nikita Lazutin (https://t.me/nikitosqq)
+- Siraj (https://t.me/sirajfarhan)
 
 
-LevartBot - бот, с помощью которого можно отслеживать предстоящие мероприятия.
 
 Getting started:
 1. pip install -r requirements.txt
