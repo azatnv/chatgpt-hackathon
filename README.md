@@ -6,7 +6,7 @@
 
 [[Презентация]](https://docs.google.com/presentation/d/1qGi-cuh1QZmW6kYfOj5x6v7Lkl0-PF3a/edit#slide=id.p3)
 
-### Команда:
+### Команда ИТМО:
 
 - Alexander Dupak (https://t.me/Sashadupak)
 - Ivan Samosevich (https://t.me/isamosssa)
