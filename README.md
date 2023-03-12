@@ -8,11 +8,11 @@
 
 ### Команда ИТМО:
 
-- Alexander Dupak (https://t.me/Sashadupak)
-- Ivan Samosevich (https://t.me/isamosssa)
-- Azat Sibagatulin (https://t.me/isamosssa)
-- Nikita Lazutin (https://t.me/nikitosqq)
-- Siraj (https://t.me/sirajfarhan)
+- Alexander Dupak [@Sashadupak](https://t.me/Sashadupak)
+- Ivan Samosevich [@isamosssa](https://t.me/isamosssa)
+- Azat Sibagatulin [@azat_nv](https://t.me/azat_nv)
+- Nikita Lazutin [@nikitosqq](https://t.me/nikitosqq)
+- Siraj [@sirajfarhan](https://t.me/sirajfarhan)
 
 
 Доступные функции:
