@@ -5,7 +5,7 @@ menu_button = types.KeyboardButton("Меню")
 # ближайшие
 nearest_tree_event_button = types.KeyboardButton("Ближайшие мероприятия")
 # источники
-event_sources_button = types.KeyboardButton("Источники ИТМО")
+event_sources_button = types.KeyboardButton("Источники")
 # на этой неделе:
 current_week_button = types.KeyboardButton("Текущая неделя")
 # на следующей:
