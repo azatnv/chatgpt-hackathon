@@ -3,8 +3,8 @@ from telebot.async_telebot import AsyncTeleBot
 import os
 from dotenv import load_dotenv, find_dotenv
 
-from inline_buttons import init_keyboard_client
-from inline_buttons.inline_buttons import keyboard_client
+from inline_buttons import init_keyboard
+from inline_buttons.inline_buttons import link_to_menu_keyboard, menu_keyboard
 from main import get_events, get_communities, all_groups
 from utlis import get_date_string
 
@@ -22,7 +22,6 @@ bot = AsyncTeleBot(BOT_TOKEN)
 @bot.message_handler(commands=["start"])
 async def send_welcome(message: types.Message):
     await bot.delete_message(message.chat.id, message.message_id)
-    # logo_path ="./data/logo.jpg"
     await bot.send_message(
         message.chat.id,
         """
@@ -33,14 +32,23 @@ async def send_welcome(message: types.Message):
 Больше не нужно самим искать «то самое мероприятие» и тратить свое время.
 
 Просто попробуй.""",
-        # parse_mode="HTML",
-        reply_markup = init_keyboard_client
+        reply_markup = init_keyboard
+    )
+
+
+@bot.message_handler(regexp=r"^Меню")
+async def menu(message: types.Message):
+    await bot.delete_message(message.chat.id, message.message_id)
+    await bot.send_message(
+        message.chat.id,
+        "Выберите опцию:",
+        reply_markup=menu_keyboard
     )
 
 
 @bot.message_handler(regexp=r"^Ближайшие мероприятия")
 async def send_tree_nearest_events(message):
-    pre_speech = "Обрадуйте себя и посетите одно из великолепных мероприятий, доступных в ближайшее время! Насладитесь прекрасными моментами, которые представляют следующие мероприятия:"
+    pre_speech = "Levart подобрал анонсы самых ближайших мероприятий:"
     events = get_events()
     event_list = []
     for i, event in enumerate(events, start = 1):
@@ -61,24 +69,47 @@ async def send_tree_nearest_events(message):
         f"{''.join(event_list)}",
         parse_mode="HTML",
         disable_web_page_preview=True,
-        reply_markup=keyboard_client
+        reply_markup=link_to_menu_keyboard
     )
 
 
-@bot.message_handler(regexp=r"^Источники мероприятий")
+@bot.message_handler(regexp=r"^Источники")
 async def send_groups_info(message):
     communities = all_groups
     communities_list = "\n".join([i[0] for i in communities])
     await bot.send_message(
         message.chat.id,
-        f"На данный момент нам доступны сообщества:\n{communities_list}"
+        f"На данный момент нам доступны сообщества:\n{communities_list}",
+        reply_markup=link_to_menu_keyboard
     )
-    
+
+
+@bot.message_handler(regexp=r"^Текущая неделя")
+async def current_week_events(message):
+    await bot.send_message(
+        message.chat.id,
+        "Анонсы мероприятий на Текущую неделю:",
+        reply_markup=link_to_menu_keyboard
+    )
+
+
+@bot.message_handler(regexp=r"^Следующая неделя")
+async def next_week_events(message):
+    await bot.send_message(
+        message.chat.id,
+        "Анонсы мероприятий на Следующую неделю:",
+        reply_markup=link_to_menu_keyboard
+    )
+
 
 @bot.message_handler()
 async def echo_all(message: types.Message):
-    # await bot.delete_message(message.chat.id, message.message_id)
-    pass
+    await bot.delete_message(message.chat.id, message.message_id)
+    await bot.send_message(
+        message.chat.id,
+        "Меню:",
+        reply_markup=link_to_menu_keyboard
+    )
 
 
 print("bot started >>> GO,GO,GO!")

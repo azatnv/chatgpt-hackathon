@@ -1,1 +1,1 @@
-from inline_buttons.inline_buttons import init_keyboard_client
+from inline_buttons.inline_buttons import init_keyboard
