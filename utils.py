@@ -3,18 +3,14 @@ import datetime
 
 def get_next_weekday(date, weekday):  # weekday: 0 = Monday, 1=Tuesday, 2=Wednesday...
     days_ahead = weekday - date.weekday()
-    if days_ahead <= 0: # Target day already happened this week
+    if days_ahead <= 0:  # Target day already happened this week
         days_ahead += 7
     return date + datetime.timedelta(days_ahead)
 
 
 def get_current_sunday():
     today = datetime.date.today()
-    next_monday = get_next_weekday(today, 0)
-    next_monday.day -= 1
-    next_monday.hour = 23
-    next_monday.minute = 59
-    current_sunday = next_monday
+    current_sunday = get_next_weekday(today, 0) - datetime.timedelta(1)
     return current_sunday
 
 

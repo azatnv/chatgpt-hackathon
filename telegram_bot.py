@@ -5,8 +5,8 @@ from dotenv import load_dotenv, find_dotenv
 
 from inline_buttons import init_keyboard
 from inline_buttons.inline_buttons import link_to_menu_keyboard, menu_keyboard
-from main import get_events, get_communities, all_groups
-from utlis import get_date_string
+from main import get_events, all_groups, get_current_week_events, get_next_week_events
+from utils import get_date_string
 
 load_dotenv(find_dotenv())
 #Забираем токен подключения, данные для подключения к БД
@@ -78,7 +78,7 @@ async def send_groups_info(message):
     communities = all_groups
     communities_list = []
     for i in communities:
-        communities_text = f"🌐{i[0]}"
+        communities_text = f" 🌐 {i[0]}"
         communities_list.append(communities_text)
     communities_text = "\n".join(communities_list)
     await bot.send_message(
@@ -89,20 +89,57 @@ async def send_groups_info(message):
 
 @bot.message_handler(regexp=r"^Текущая неделя")
 async def current_week_events(message):
+    pre_speech = "Анонсы мероприятий на Текущую неделю:"
+    events = get_current_week_events()
+    event_list = []
+    for i, event in enumerate(events, start=1):
+        post_url = event[0]
+        event_title = event[1]
+        event_date = get_date_string(event[2])
+        event_place = f"📍 {event[3]}" if event[3] else ""
+        event_short_desc = event[4]
+        comm_name = event[6]
+        event_text = \
+            f"\n\n⚡️{comm_name} | <a href='{post_url}'>{event_title}</a>" \
+            f"\n🗓 {event_date} {event_place}" \
+            f"\n{event_short_desc}"
+        event_list.append(event_text)
     await bot.send_message(
         message.chat.id,
-        "Анонсы мероприятий на Текущую неделю:",
+        f"{pre_speech}"
+        f"{''.join(event_list)}",
+        parse_mode="HTML",
+        disable_web_page_preview=True,
         reply_markup=link_to_menu_keyboard
     )
 
 
 @bot.message_handler(regexp=r"^Следующая неделя")
 async def next_week_events(message):
+    pre_speech = "Анонсы мероприятий на Следующую неделю:"
+    events = get_next_week_events()
+    event_list = []
+    for i, event in enumerate(events, start=1):
+        post_url = event[0]
+        event_title = event[1]
+        event_date = get_date_string(event[2])
+        event_place = f"📍 {event[3]}" if event[3] else ""
+        event_short_desc = event[4]
+        comm_name = event[6]
+        event_text = \
+            f"\n\n⚡️{comm_name} | <a href='{post_url}'>{event_title}</a>" \
+            f"\n🗓 {event_date} {event_place}" \
+            f"\n{event_short_desc}"
+        event_list.append(event_text)
     await bot.send_message(
         message.chat.id,
-        "Анонсы мероприятий на Следующую неделю:",
+        f"{pre_speech}"
+        f"{''.join(event_list)}",
+        parse_mode="HTML",
+        disable_web_page_preview=True,
         reply_markup=link_to_menu_keyboard
     )
+
 
 
 @bot.message_handler()

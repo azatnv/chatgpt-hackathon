@@ -17,9 +17,9 @@ menu_keyboard = types.ReplyKeyboardMarkup(
     one_time_keyboard=True
 )
 menu_keyboard.\
-    row(nearest_tree_event_button).\
-    add(event_sources_button).\
-    row(current_week_button).add(next_week_button)
+    row(nearest_tree_event_button, next_week_button).\
+    add(event_sources_button)
+    # row(current_week_button).add(next_week_button)
 
 init_keyboard = types.ReplyKeyboardMarkup(
     resize_keyboard=True,
