@@ -14,7 +14,7 @@ DATABASE_HOST= os.environ.get('DATABASE_HOST')
 DATABASE_PORT= os.environ.get('DATABASE_PORT')
 
 
-def get_events():
+def get_tree_nearest_events():
     current_day = date.today()
     conn = psycopg2.connect(
         database = DATABASE_NAME,

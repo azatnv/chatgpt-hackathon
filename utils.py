@@ -40,7 +40,20 @@ month_map = {
     12: "декабря"
 }
 
+days_map = {
+    0: "ПН",
+    1: "ВТ",
+    2: "СР",
+    3: "ЧТ",
+    4: "ПТ",
+    5: "СБ",
+    6: "ВС"
+}
+
+
 def get_date_string(date):
+    now_day_number = date.weekday()
+    short_str_day = days_map[now_day_number]
     month = month_map[date.month]
     day = date.day
     hour = date.hour
@@ -48,4 +61,4 @@ def get_date_string(date):
     if hour == 0:
         return f"{day} {month}"
     else:
-        return f"{day} {month} {hour:02d}:{minute:02d}"
+        return f"{day} {month} ({short_str_day}) {hour:02d}:{minute:02d}"
