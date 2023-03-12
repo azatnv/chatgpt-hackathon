@@ -21,4 +21,4 @@
 3. Список источников мероприятий
 
 
-Bot Telegram Link: [@LevartTestBot](https://t.me/LevartTestBot)
+Bot Telegram Link: [@LevartBot](https://t.me/LevartTestBot)
