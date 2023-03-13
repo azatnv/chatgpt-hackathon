@@ -128,7 +128,7 @@ async def next_week_events(message):
     )
 
 
-@bot.message_handler(regexp=r"^Источники")
+@bot.message_handler(regexp=r"^Источники мероприятий")
 async def send_groups_info(message):
     communities = all_groups
     communities_list = []
