@@ -100,3 +100,17 @@ def get_next_week_events():
     next_day = get_next_monday()
     next_sunday = get_next_sunday()
     return get_week_events(next_day, next_sunday)
+
+
+def set_suggested_event_source(user_id, username, url):
+    conn = psycopg2.connect(
+        database=DATABASE_NAME,
+        user=DATABASE_USER,
+        password=DATABASE_PASSWORD,
+        host=DATABASE_HOST,
+        port=DATABASE_PORT
+    )
+    cur = conn.cursor()
+    cur.execute(f"INSERT INTO suggested_event_sources (user_id, username, url) VALUES ({user_id}, '{username}', '{url}')")
+    conn.commit()
+    conn.close()

@@ -1,12 +1,14 @@
+import re
+import os
+
 from telebot import types
 from telebot.async_telebot import AsyncTeleBot
-import os
 from dotenv import load_dotenv, find_dotenv
 
 from inline_buttons import init_keyboard
 from inline_buttons.inline_buttons import link_to_menu_keyboard, menu_keyboard
-from main import get_tree_nearest_events, all_groups, get_current_week_events, get_next_week_events
-from utils import get_date_string
+from main import get_tree_nearest_events, all_groups, get_current_week_events, get_next_week_events, set_suggested_event_source
+from utils import get_date_string, UserStates
 
 load_dotenv(find_dotenv())
 #  Забираем токен подключения, данные для подключения к БД
@@ -21,6 +23,7 @@ bot = AsyncTeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=["start"])
 async def send_welcome(message: types.Message):
+    await bot.set_state(message.from_user.id, UserStates.default, message.chat.id)
     await bot.delete_message(message.chat.id, message.message_id)
     await bot.send_message(
         message.chat.id,
@@ -38,6 +41,7 @@ async def send_welcome(message: types.Message):
 
 @bot.message_handler(regexp=r"^Меню")
 async def menu(message: types.Message):
+    await bot.set_state(message.from_user.id, UserStates.default, message.chat.id)
     await bot.delete_message(message.chat.id, message.message_id)
     await bot.send_message(
         message.chat.id,
@@ -144,15 +148,56 @@ async def send_groups_info(message):
     )
 
 
-@bot.message_handler()
-async def echo_all(message: types.Message):
-    await bot.delete_message(message.chat.id, message.message_id)
+@bot.message_handler(regexp=r"^Посоветовать источник")
+async def suggest_event_source(message):
     await bot.send_message(
         message.chat.id,
-        "Меню:",
+        "Отправьте ссылку на источник с мероприятиями:",
         disable_web_page_preview=True,
         reply_markup=link_to_menu_keyboard
     )
+    await bot.set_state(message.from_user.id, UserStates.suggest_source, message.chat.id)
+
+
+@bot.message_handler()
+async def echo_all(message: types.Message):
+    user_state = await bot.get_state(message.from_user.id, message.chat.id)
+    if str(user_state) == str(UserStates.suggest_source):
+        user_id = message.from_user.id
+        username = message.from_user.username
+        user_url_message = message.text
+        if user_url_message.startswith("http"):
+            user_url_message_modified = user_url_message
+        else:
+            user_url_message_modified = "http://" + user_url_message
+        regex = re.compile(
+            r'^https?://'  # http:// or https://
+            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?)' #domain
+            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+        if regex.search(user_url_message_modified):
+            await bot.set_state(user_id, UserStates.default, message.chat.id)
+            await bot.send_message(
+                message.chat.id,
+                "Ваше предложение принято!",
+                disable_web_page_preview=True,
+                reply_markup=link_to_menu_keyboard
+            )
+            set_suggested_event_source(user_id, username, user_url_message)
+        else:
+            await bot.send_message(
+                message.chat.id,
+                "Введите корректную ссылку",
+                disable_web_page_preview=True,
+                reply_markup=link_to_menu_keyboard
+            )
+    else:
+        await bot.delete_message(message.chat.id, message.message_id)
+        await bot.send_message(
+            message.chat.id,
+            "Меню:",
+            disable_web_page_preview=True,
+            reply_markup=link_to_menu_keyboard
+        )
 
 
 print("bot started >>> GO,GO,GO!")

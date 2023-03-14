@@ -1,5 +1,7 @@
 import datetime
 
+from telebot.asyncio_handler_backends import StatesGroup, State
+
 
 def get_next_weekday(date, weekday):  # weekday: 0 = Monday, 1=Tuesday, 2=Wednesday...
     days_ahead = weekday - date.weekday()
@@ -62,3 +64,8 @@ def get_date_string(date):
         return f"{day} {month}"
     else:
         return f"{day} {month} ({short_str_day}) {hour:02d}:{minute:02d}"
+
+
+class UserStates(StatesGroup):
+    default = State()
+    suggest_source = State()
