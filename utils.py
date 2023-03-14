@@ -21,7 +21,7 @@ def get_next_monday():
 
 
 def get_next_sunday():
-    today = datetime.date.today()
+    today = get_next_weekday(datetime.date.today(), 0) #next monday
     next_sunday = get_next_weekday(today, 6)
     return next_sunday
 

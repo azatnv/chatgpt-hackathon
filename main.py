@@ -99,4 +99,4 @@ def get_current_week_events():
 def get_next_week_events():
     next_day = get_next_monday()
     next_sunday = get_next_sunday()
-    return get_week_events(next_sunday, next_day)
+    return get_week_events(next_day, next_sunday)
