@@ -69,3 +69,4 @@ def get_date_string(date):
 class UserStates(StatesGroup):
     default = State()
     suggest_source = State()
+    suggest_functionality = State()

@@ -111,6 +111,22 @@ def set_suggested_event_source(user_id, username, url):
         port=DATABASE_PORT
     )
     cur = conn.cursor()
-    cur.execute(f"INSERT INTO suggested_event_sources (user_id, username, url) VALUES ({user_id}, '{username}', '{url}')")
+    cur.execute(f"INSERT INTO suggested_event_sources (user_id, username, url) "
+                f"VALUES ({user_id}, '{username}', '{url}')")
+    conn.commit()
+    conn.close()
+
+
+def set_suggested_functionality(user_id, username, suggestion):
+    conn = psycopg2.connect(
+        database=DATABASE_NAME,
+        user=DATABASE_USER,
+        password=DATABASE_PASSWORD,
+        host=DATABASE_HOST,
+        port=DATABASE_PORT
+    )
+    cur = conn.cursor()
+    cur.execute(f"INSERT INTO suggested_functionality (user_id, username, suggestion) "
+                f"VALUES ({user_id}, '{username}', '{suggestion}')")
     conn.commit()
     conn.close()
