@@ -97,9 +97,9 @@ def get_current_week_events():
 
 
 def get_next_week_events():
-    next_day = get_next_monday()
+    next_monday = get_next_monday()
     next_sunday = get_next_sunday()
-    return get_week_events(next_day, next_sunday)
+    return get_week_events(next_monday, next_sunday)
 
 
 def set_suggested_event_source(user_id, username, url):
