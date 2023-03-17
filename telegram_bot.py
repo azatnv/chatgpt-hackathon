@@ -10,7 +10,8 @@ from dotenv import load_dotenv, find_dotenv
 from inline_buttons import init_keyboard
 from inline_buttons.inline_buttons import link_to_menu_keyboard, menu_keyboard
 from main import get_tree_nearest_events, all_groups, get_current_week_events, get_next_week_events, \
-    set_suggested_event_source, set_suggested_functionality, get_current_and_next_week_events
+    set_suggested_event_source, set_suggested_functionality, get_current_and_next_week_events, set_user_start_date, \
+    set_user_last_date, get_users_count
 from utils import get_date_string, UserStates
 
 load_dotenv(find_dotenv())
@@ -26,6 +27,8 @@ bot = AsyncTeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=["start"])
 async def send_welcome(message: types.Message):
+    set_user_start_date(message.from_user.id, message.from_user.username)
+
     await bot.set_state(message.from_user.id, UserStates.default, message.chat.id)
     await bot.delete_message(message.chat.id, message.message_id)
     await bot.send_message(
@@ -49,8 +52,19 @@ async def send_welcome(message: types.Message):
     )
 
 
+@bot.message_handler(commands=["users_count"])
+async def count_users(message: types.Message):
+    await bot.send_message(
+        message.chat.id,
+        f"Общее число пользователей: {get_users_count()}",
+        reply_markup=link_to_menu_keyboard
+    )
+
+
 @bot.message_handler(regexp=r"^Меню")
 async def menu(message: types.Message):
+    set_user_last_date(message.from_user.id, message.from_user.username)
+
     await bot.set_state(message.from_user.id, UserStates.default, message.chat.id)
     await bot.delete_message(message.chat.id, message.message_id)
     await bot.send_message(
@@ -63,6 +77,8 @@ async def menu(message: types.Message):
 
 @bot.message_handler(regexp=r"^Ближайшие мероприятия")
 async def send_tree_nearest_events(message):
+    set_user_last_date(message.from_user.id, message.from_user.username)
+
     nearest_events_inline_keyboard = types.InlineKeyboardMarkup()
     nearest_events_calendar_button = types.InlineKeyboardButton("Добавить в календарь",
                                                                 callback_data=str(UserStates.calendar_nearest_events))
@@ -96,6 +112,8 @@ async def send_tree_nearest_events(message):
 
 @bot.message_handler(regexp=r"^Текущая неделя")
 async def current_week_events(message):
+    set_user_last_date(message.from_user.id, message.from_user.username)
+
     pre_speech = "Анонсы мероприятий на ТЕКУЩУЮ неделю:"
     events = get_current_week_events()
     event_list = []
@@ -123,6 +141,8 @@ async def current_week_events(message):
 
 @bot.message_handler(regexp=r"^Следующая неделя")
 async def next_week_events(message):
+    set_user_last_date(message.from_user.id, message.from_user.username)
+
     next_week_events_inline_keyboard = types.InlineKeyboardMarkup()
     next_week_events_calendar_button = types.InlineKeyboardButton("Добавить в календарь",
                                                                   callback_data=str(UserStates.calendar_next_week))
@@ -156,6 +176,8 @@ async def next_week_events(message):
 
 @bot.message_handler(regexp=r"^Источники мероприятий")
 async def send_groups_info(message):
+    set_user_last_date(message.from_user.id, message.from_user.username)
+
     communities = all_groups
     communities_list = []
     for i in communities:
@@ -172,6 +194,8 @@ async def send_groups_info(message):
 
 @bot.message_handler(regexp=r"^Предложить улучшение")
 async def suggest_improvement(message):
+    set_user_last_date(message.from_user.id, message.from_user.username)
+
     suggest_menu_inline_keyboard = types.InlineKeyboardMarkup()
     suggest_event_source_button = types.InlineKeyboardButton("Посоветовать источник", callback_data=str(UserStates.suggest_source))
     suggest_functionality_button = types.InlineKeyboardButton("Посоветовать функционал", callback_data=str(UserStates.suggest_functionality))
