@@ -102,6 +102,12 @@ def get_next_week_events():
     return get_events_from_date_interval(next_monday, next_sunday)
 
 
+def get_current_and_next_week_events():
+    current_day = date.today()
+    next_sunday = get_next_sunday()
+    return get_events_from_date_interval(current_day, next_sunday)
+
+
 def set_suggested_event_source(user_id, username, url):
     conn = psycopg2.connect(
         database=DATABASE_NAME,
