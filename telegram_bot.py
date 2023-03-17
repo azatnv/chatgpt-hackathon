@@ -54,6 +54,11 @@ async def menu(message: types.Message):
 
 @bot.message_handler(regexp=r"^Ближайшие мероприятия")
 async def send_tree_nearest_events(message):
+    nearest_events_inline_keyboard = types.InlineKeyboardMarkup()
+    nearest_events_calendar_button = types.InlineKeyboardButton("Добавить в календарь", callback_data=str(UserStates.calendar_nearest_events))
+    menu_inline_button = types.InlineKeyboardButton("Меню", callback_data=str(UserStates.default))
+    nearest_events_inline_keyboard.add(nearest_events_calendar_button).add(menu_inline_button)
+
     pre_speech = "Levart подобрал анонсы самых ближайших мероприятий:"
     events = get_tree_nearest_events()
     event_list = []
@@ -75,7 +80,7 @@ async def send_tree_nearest_events(message):
         f"{''.join(event_list)}",
         parse_mode="HTML",
         disable_web_page_preview=True,
-        reply_markup=link_to_menu_keyboard
+        reply_markup=nearest_events_inline_keyboard
     )
 
 
@@ -155,7 +160,7 @@ async def suggest_improvement(message):
     suggest_event_source_button = types.InlineKeyboardButton("Посоветовать источник", callback_data=str(UserStates.suggest_source))
     suggest_functionality_button = types.InlineKeyboardButton("Посоветовать функционал", callback_data=str(UserStates.suggest_functionality))
     menu_inline_button = types.InlineKeyboardButton("Меню", callback_data=str(UserStates.default))
-    suggest_menu_inline_keyboard.add(suggest_event_source_button).add(suggest_functionality_button).add(menu_inline_button)
+    suggest_menu_inline_keyboard.add(suggest_event_source_button, suggest_functionality_button, menu_inline_button, row_width=1)
     await bot.send_message(
         message.chat.id,
         "Подскажите, как нам стать лучше:",
@@ -164,7 +169,19 @@ async def suggest_improvement(message):
     )
 
 
-@bot.callback_query_handler(func=lambda call: True)
+@bot.callback_query_handler(func=lambda call: call.data == str(UserStates.default))
+async def menu_query_handler(call):
+    await bot.set_state(call.from_user.id, UserStates.default, call.message.chat.id)
+    await bot.answer_callback_query(call.id)
+    await bot.send_message(
+        call.message.chat.id,
+        "Меню:",
+        disable_web_page_preview=True,
+        reply_markup=menu_keyboard
+    )
+
+
+@bot.callback_query_handler(func=lambda call: "suggest_" in call.data)
 async def suggest_query_handler(call):
     if call.data == str(UserStates.suggest_source):
         await bot.answer_callback_query(
@@ -186,15 +203,45 @@ async def suggest_query_handler(call):
             "Какие функции хотелось бы видеть в будущем?"
         )
         await bot.set_state(call.from_user.id, UserStates.suggest_functionality, call.message.chat.id)
-    if call.data == str(UserStates.default):
+
+
+@bot.callback_query_handler(func=lambda call: "calendar_" in call.data)
+async def calendar_query_handler(call):
+    if call.data == str(UserStates.calendar_nearest_events):
+        button_list = [
+            types.InlineKeyboardButton("1", callback_data="select_event_to_cal_0"),
+            types.InlineKeyboardButton("2", callback_data="select_event_to_cal_1"),
+            types.InlineKeyboardButton("3", callback_data="select_event_to_cal_2")
+        ]
+        events_keyboard = types.InlineKeyboardMarkup().add(*button_list, row_width=1)
+        events_keyboard.row(types.InlineKeyboardButton("Добавить", callback_data=str(UserStates.calendar_nearest_events_add)),
+                            types.InlineKeyboardButton("Меню", callback_data=str(UserStates.default)))
+
         await bot.set_state(call.from_user.id, UserStates.default, call.message.chat.id)
         await bot.delete_message(call.message.chat.id, call.message.message_id)
         await bot.send_message(
             call.message.chat.id,
-            "Меню:",
+            "Отметьте мероприятия, которые необходимо добавить:",
             disable_web_page_preview=True,
-            reply_markup=link_to_menu_keyboard
+            reply_markup=events_keyboard
         )
+    if call.data == str(UserStates.calendar_nearest_events_add):
+        print("calendar_nearest_events_add")
+
+
+@bot.callback_query_handler(func=lambda call: "select_event_to_cal_" in call.data)
+async def select_event_calendar_query_handler(call):
+    await bot.answer_callback_query(call.id)
+    selected_button_n = int(call.data.replace("select_event_to_cal_", ""))
+    events_keyboard = call.message.reply_markup.keyboard
+    selected_button_text = events_keyboard[selected_button_n][0].text
+    if "✅" in selected_button_text:
+        new_button_text = selected_button_text.replace(" ✅", "")
+    else:
+        new_button_text = selected_button_text + " ✅"
+    events_keyboard[selected_button_n][0].text = new_button_text
+    await bot.edit_message_reply_markup(call.message.chat.id, call.message.id,
+                                        reply_markup=types.InlineKeyboardMarkup(events_keyboard))
 
 
 @bot.message_handler()

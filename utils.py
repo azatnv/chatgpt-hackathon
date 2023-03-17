@@ -1,5 +1,6 @@
 import datetime
 
+from telebot import types
 from telebot.asyncio_handler_backends import StatesGroup, State
 
 
@@ -70,3 +71,6 @@ class UserStates(StatesGroup):
     default = State()
     suggest_source = State()
     suggest_functionality = State()
+    calendar_nearest_events = State()
+    calendar_nearest_events_add = State()
+    calendar_next_week = State()
