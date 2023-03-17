@@ -1,6 +1,5 @@
 import datetime
 
-from telebot import types
 from telebot.asyncio_handler_backends import StatesGroup, State
 
 

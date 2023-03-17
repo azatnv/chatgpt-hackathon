@@ -1,3 +1,5 @@
+import datetime
+
 import psycopg2
 import os
 from dotenv import load_dotenv, find_dotenv
@@ -134,5 +136,76 @@ def set_suggested_functionality(user_id, username, suggestion):
     cur = conn.cursor()
     cur.execute(f"INSERT INTO suggested_functionality (user_id, username, suggestion) "
                 f"VALUES ({user_id}, '{username}', '{suggestion}')")
+    conn.commit()
+    conn.close()
+
+
+def check_new_user(user_id, username):
+    is_new = False
+    conn = psycopg2.connect(
+        database=DATABASE_NAME,
+        user=DATABASE_USER,
+        password=DATABASE_PASSWORD,
+        host=DATABASE_HOST,
+        port=DATABASE_PORT
+    )
+    cur = conn.cursor()
+    cur.execute(f"SELECT user_id FROM users WHERE user_id = {user_id}")
+    rows = cur.fetchall()
+    if len(rows) == 0:
+        cur.execute(f"INSERT INTO users (user_id, username) "
+                    f"VALUES ({user_id}, '{username}')")
+        is_new = True
+        conn.commit()
+    conn.close()
+
+    return is_new
+
+
+def get_users_count():
+    conn = psycopg2.connect(
+        database=DATABASE_NAME,
+        user=DATABASE_USER,
+        password=DATABASE_PASSWORD,
+        host=DATABASE_HOST,
+        port=DATABASE_PORT
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT count(*) user_id from users")
+    rows = cur.fetchall()
+    count = rows[0][0]
+    conn.close()
+
+    return count
+
+
+def set_user_start_date(user_id, username):
+    if check_new_user(user_id, username):
+        conn = psycopg2.connect(
+            database=DATABASE_NAME,
+            user=DATABASE_USER,
+            password=DATABASE_PASSWORD,
+            host=DATABASE_HOST,
+            port=DATABASE_PORT
+        )
+        cur = conn.cursor()
+        cur.execute(f"UPDATE users SET user_start_date = TIMESTAMP '{datetime.datetime.now()}' WHERE user_id = {user_id}")
+        cur.execute(f"UPDATE users SET user_last_date = TIMESTAMP '{datetime.datetime.now()}' WHERE user_id = {user_id}")
+        conn.commit()
+        conn.close()
+
+
+def set_user_last_date(user_id, username):
+    check_new_user(user_id, username)
+    conn = psycopg2.connect(
+        database=DATABASE_NAME,
+        user=DATABASE_USER,
+        password=DATABASE_PASSWORD,
+        host=DATABASE_HOST,
+        port=DATABASE_PORT
+    )
+    cur = conn.cursor()
+    cur.execute(f"UPDATE users SET user_last_date = TIMESTAMP '{datetime.datetime.now()}' WHERE user_id = {user_id}")
+    cur.execute(f"UPDATE users SET username = '{username}' WHERE user_id = {user_id}")
     conn.commit()
     conn.close()
