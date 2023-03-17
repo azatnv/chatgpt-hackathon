@@ -38,6 +38,13 @@ async def send_welcome(message: types.Message):
 Просто попробуй.""",
         reply_markup = init_keyboard
     )
+    await bot.send_message(
+        message.chat.id,
+        """
+Пока что бот находится в тестовом режиме и работает не стабильно, мы доделываем функционал, скоро все будет работать как надо.
+Оставайтесь с нами, следите за проектом и обязательно оставляйте свои пожелания по новым функциям!
+"""
+    )
 
 
 @bot.message_handler(regexp=r"^Меню")

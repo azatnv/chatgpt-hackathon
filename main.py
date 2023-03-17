@@ -62,7 +62,7 @@ def get_communities():
 all_groups = get_communities()
 
 
-def get_week_events(from_date, to_date):
+def get_events_from_date_interval(from_date, to_date):
     conn = psycopg2.connect(
         database=DATABASE_NAME,
         user=DATABASE_USER,
@@ -93,13 +93,13 @@ def get_week_events(from_date, to_date):
 def get_current_week_events():
     current_day = date.today()
     current_sunday = get_current_sunday()
-    return get_week_events(current_day, current_sunday)
+    return get_events_from_date_interval(current_day, current_sunday)
 
 
 def get_next_week_events():
-    next_day = get_next_monday()
+    next_monday = get_next_monday()
     next_sunday = get_next_sunday()
-    return get_week_events(next_day, next_sunday)
+    return get_events_from_date_interval(next_monday, next_sunday)
 
 
 def set_suggested_event_source(user_id, username, url):
