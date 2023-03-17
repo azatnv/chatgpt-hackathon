@@ -10,22 +10,23 @@ def get_next_weekday(date, weekday):  # weekday: 0 = Monday, 1=Tuesday, 2=Wednes
     return date + datetime.timedelta(days_ahead)
 
 
-def get_current_sunday():
-    today = datetime.date.today()
-    current_sunday = get_next_weekday(today, 0) - datetime.timedelta(1)
-    return current_sunday
-
-
 def get_next_monday():
     today = datetime.date.today()
     next_monday = get_next_weekday(today, 0)
     return next_monday
 
 
+def get_current_sunday():
+    next_monday = get_next_monday()
+    current_sunday = next_monday - datetime.timedelta(1)
+    return current_sunday
+
+
 def get_next_sunday():
-    today = get_next_weekday(datetime.date.today(), 0) #next monday
-    next_sunday = get_next_weekday(today, 6)
+    next_monday = get_next_monday()  # next monday
+    next_sunday = get_next_weekday(next_monday, 6)
     return next_sunday
+
 
 month_map = {
     1: "января",
