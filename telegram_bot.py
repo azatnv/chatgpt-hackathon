@@ -8,7 +8,7 @@ from telebot.async_telebot import AsyncTeleBot
 from dotenv import load_dotenv, find_dotenv
 
 from inline_buttons import init_keyboard
-from inline_buttons.inline_buttons import link_to_menu_keyboard, menu_keyboard
+from inline_buttons.inline_buttons import menu_keyboard
 from main import get_tree_nearest_events, all_groups, get_current_week_events, get_next_week_events, \
     set_suggested_event_source, set_suggested_functionality, get_current_and_next_week_events, set_user_start_date, \
     set_user_last_date, get_users_count
@@ -59,7 +59,7 @@ async def count_users(message: types.Message):
     await bot.send_message(
         message.chat.id,
         f"Общее число пользователей: {get_users_count()}",
-        reply_markup=link_to_menu_keyboard
+        reply_markup=menu_keyboard
     )
 
 
@@ -117,8 +117,19 @@ async def send_tree_nearest_events(message):
 async def current_week_events(message):
     set_user_last_date(message.from_user.id, message.from_user.username)
 
-    pre_speech = "Анонсы мероприятий на ТЕКУЩУЮ неделю:"
     events = get_current_week_events()
+
+    current_week_events_inline_keyboard = types.InlineKeyboardMarkup()
+    current_week_events_calendar_button = types.InlineKeyboardButton("Добавить в календарь",
+                                                                     callback_data=str(UserStates.calendar_current_week))
+    menu_inline_button = types.InlineKeyboardButton("Меню", callback_data=str(UserStates.default))
+    if len(events) > 5:
+        events_next_page_button = types.InlineKeyboardButton("Далее", callback_data="next_current_week_page_0")
+        current_week_events_inline_keyboard.add(events_next_page_button)
+        events = events[:5]
+    current_week_events_inline_keyboard.add(current_week_events_calendar_button, menu_inline_button, row_width=1)
+
+    pre_speech = "Анонсы мероприятий на ТЕКУЩУЮ неделю:"
     event_list = []
     for i, event in enumerate(events, start=1):
         post_url = event[0]
@@ -127,9 +138,10 @@ async def current_week_events(message):
         event_place = f"📍 {event[3]}" if event[3] else ""
         event_short_desc = event[4]
         comm_name = event[6]
+        event_date_link = make_google_cal_url(event_title, event[2], event[3] if event[3] else "", comm_name)
         event_text = \
             f"\n\n⚡️{comm_name} | <a href='{post_url}'>{event_title}</a>" \
-            f"\n🗓 {event_date} {event_place}" \
+            f"\n🗓 <a href='{event_date_link}'>{event_date}</a> {event_place}" \
             f"\n{event_short_desc}"
         event_list.append(event_text)
     await bot.send_message(
@@ -138,7 +150,7 @@ async def current_week_events(message):
         f"{''.join(event_list)}",
         parse_mode="HTML",
         disable_web_page_preview=True,
-        reply_markup=link_to_menu_keyboard
+        reply_markup=current_week_events_inline_keyboard
     )
 
 
@@ -162,9 +174,10 @@ async def next_week_events(message):
         event_place = f"📍 {event[3]}" if event[3] else ""
         event_short_desc = event[4]
         comm_name = event[6]
+        event_date_link = make_google_cal_url(event_title, event[2], event[3] if event[3] else "", comm_name)
         event_text = \
             f"\n\n⚡️{comm_name} | <a href='{post_url}'>{event_title}</a>" \
-            f"\n🗓 {event_date} {event_place}" \
+            f"\n🗓 <a href='{event_date_link}'>{event_date}</a> {event_place}" \
             f"\n{event_short_desc}"
         event_list.append(event_text)
     await bot.send_message(
@@ -191,7 +204,7 @@ async def send_groups_info(message):
         message.chat.id,
         f"На данный момент нам доступны сообщества:\n\n{communities_text}",
         disable_web_page_preview=True,
-        reply_markup=link_to_menu_keyboard
+        reply_markup=menu_keyboard
     )
 
 
@@ -215,6 +228,7 @@ async def suggest_improvement(message):
 @bot.callback_query_handler(func=lambda call: call.data == str(UserStates.default))
 async def menu_query_handler(call):
     await bot.set_state(call.from_user.id, UserStates.default, call.message.chat.id)
+    await bot.delete_message(call.message.chat.id, call.message.message_id)
     await bot.answer_callback_query(call.id)
     await bot.send_message(
         call.message.chat.id,
@@ -250,27 +264,28 @@ async def suggest_query_handler(call):
 
 @bot.callback_query_handler(func=lambda call: "calendar_" in call.data)
 async def calendar_query_handler(call):
+    def get_event_list(events):
+        event_list = list()
+        for event in events:
+            event_title = event[1]
+            event_date = get_date_string(event[2])
+            event_place = event[3] if event[3] else ""
+            comm_name = event[6]
+            event_list.append([event_title, event_date, event_place, comm_name])
+        return event_list
+
     # Собираем места для ближайших
     if call.data == str(UserStates.calendar_nearest_events):
         events = get_tree_nearest_events()
-        event_list = list()
-        for event in events:
-            event_title = event[1]
-            event_date = get_date_string(event[2])
-            event_place = event[3] if event[3] else ""
-            comm_name = event[6]
-            event_list.append([event_title, event_date, event_place, comm_name])
-
+        event_list = get_event_list(events)
+    # Собираем места для ближайших
+    if call.data == str(UserStates.calendar_current_week):
+        events = get_current_week_events()
+        event_list = get_event_list(events)
     # Собираем места для следующей недели
     if call.data == str(UserStates.calendar_next_week):
         events = get_next_week_events()
-        event_list = list()
-        for event in events:
-            event_title = event[1]
-            event_date = get_date_string(event[2])
-            event_place = event[3] if event[3] else ""
-            comm_name = event[6]
-            event_list.append([event_title, event_date, event_place, comm_name])
+        event_list = get_event_list(events)
 
     # Отправляем меню с выбором мероприятий
     button_list = list()
@@ -303,6 +318,8 @@ async def add_to_calendar(call):
         if "✅" in button_text:
             events_button_text.append(button_text.replace(" ✅", ""))
 
+    await bot.delete_message(call.message.chat.id, call.message.message_id)
+
     events = get_current_and_next_week_events()
     event_list_add = list()
     for event in events:
@@ -323,7 +340,7 @@ async def add_to_calendar(call):
             call.message.chat.id,
             "Мероприятия не были выбраны",
             disable_web_page_preview=True,
-            reply_markup=link_to_menu_keyboard
+            reply_markup=menu_keyboard
         )
     else:
         cal = Calendar()
@@ -344,9 +361,10 @@ async def add_to_calendar(call):
         )
         await bot.send_message(
             call.message.chat.id,
-            "⬇️ Нажмите на файл, чтобы добавить в календарь ⬇️",
+            "Загрузите файл ICS, чтобы добавить в календарь.\n"
+            "Также можно добавить каждое мероприятие отдельно, нажав на ссылки в сообщении.",
             disable_web_page_preview=True,
-            reply_markup=link_to_menu_keyboard
+            reply_markup=menu_keyboard
         )
         directory = tempfile.mkdtemp()
         f = open(os.path.join(directory, f'Мероприятия - {call.from_user.username}.ics'), 'wb+')
@@ -372,6 +390,69 @@ async def select_event_calendar_query_handler(call):
                                         reply_markup=types.InlineKeyboardMarkup(events_keyboard))
 
 
+@bot.callback_query_handler(func=lambda call: "_current_week_page_" in call.data)
+async def select_page_current_week_query_handler(call):
+    await bot.answer_callback_query(call.id)
+    current_page = int(re.search('_current_week_page_(.+?)', call.data).group(1))
+    command = re.search('(.+?)_current_week_page_', call.data).group(1)
+    events_keyboard = call.message.reply_markup.keyboard
+    events = get_current_week_events()
+    if command == "next":
+        if len(events) > 5 * (current_page + 2):
+            events_next_page_button = types.InlineKeyboardButton("Далее",
+                                                                 callback_data=f"next_current_week_page_{current_page + 1}")
+            events_prev_page_button = types.InlineKeyboardButton("Назад",
+                                                                 callback_data=f"prev_current_week_page_{current_page + 1}")
+            events_curr_page_button = types.InlineKeyboardButton(f"{current_page + 2}/{len(events)//5+1}", callback_data="echo")
+            events_keyboard[0] = [events_prev_page_button, events_curr_page_button, events_next_page_button]
+            events = events[(5 * (current_page + 1)):(5 * (current_page + 2))]
+        else:
+            events_prev_page_button = types.InlineKeyboardButton("Назад",
+                                                                 callback_data=f"prev_current_week_page_{current_page + 1}")
+            events_keyboard[0] = [events_prev_page_button]
+            events = events[(5 * (current_page + 1)):len(events)]
+    else:
+        if current_page > 1:
+            events_next_page_button = types.InlineKeyboardButton("Далее",
+                                                                 callback_data=f"next_current_week_page_{current_page - 1}")
+            events_prev_page_button = types.InlineKeyboardButton("Назад",
+                                                                 callback_data=f"prev_current_week_page_{current_page - 1}")
+            events_curr_page_button = types.InlineKeyboardButton(f"{current_page}/{len(events)//5+1}", callback_data="echo")
+            events_keyboard[0] = [events_prev_page_button, events_curr_page_button, events_next_page_button]
+            events = events[(5 * (current_page - 1)):(5 * current_page)]
+        else:
+            events_next_page_button = types.InlineKeyboardButton("Далее",
+                                                                 callback_data=f"next_current_week_page_{current_page - 1}")
+            events_keyboard[0] = [events_next_page_button]
+            events = events[:5]
+
+    pre_speech = "Анонсы мероприятий на ТЕКУЩУЮ неделю:"
+    event_list = []
+    for i, event in enumerate(events, start=1):
+        post_url = event[0]
+        event_title = event[1]
+        event_date = get_date_string(event[2])
+        event_place = f"📍 {event[3]}" if event[3] else ""
+        event_short_desc = event[4]
+        comm_name = event[6]
+        event_date_link = make_google_cal_url(event_title, event[2], event[3] if event[3] else "", comm_name)
+        event_text = \
+            f"\n\n⚡️{comm_name} | <a href='{post_url}'>{event_title}</a>" \
+            f"\n🗓 <a href='{event_date_link}'>{event_date}</a> {event_place}" \
+            f"\n{event_short_desc}"
+        event_list.append(event_text)
+
+    await bot.delete_message(call.message.chat.id, call.message.message_id)
+    await bot.send_message(
+        call.message.chat.id,
+        f"{pre_speech}"
+        f"{''.join(event_list)}",
+        parse_mode="HTML",
+        disable_web_page_preview=True,
+        reply_markup=types.InlineKeyboardMarkup(events_keyboard)
+    )
+
+
 @bot.message_handler()
 async def echo_all(message: types.Message):
     user_state = await bot.get_state(message.from_user.id, message.chat.id)
@@ -393,7 +474,7 @@ async def echo_all(message: types.Message):
                 message.chat.id,
                 "Ваше предложение принято!",
                 disable_web_page_preview=True,
-                reply_markup=link_to_menu_keyboard
+                reply_markup=menu_keyboard
             )
             set_suggested_event_source(user_id, username, user_message_text)
         else:
@@ -407,7 +488,7 @@ async def echo_all(message: types.Message):
             message.chat.id,
             "Спасибо за советы! Мы обязательно рассмотрим твое предложение и подумаем как можно сделать бота еще лучше",
             disable_web_page_preview=True,
-            reply_markup=link_to_menu_keyboard
+            reply_markup=menu_keyboard
         )
         set_suggested_functionality(user_id, username, user_message_text)
     else:
@@ -416,7 +497,7 @@ async def echo_all(message: types.Message):
             message.chat.id,
             "Меню:",
             disable_web_page_preview=True,
-            reply_markup=link_to_menu_keyboard
+            reply_markup=menu_keyboard
         )
 
 

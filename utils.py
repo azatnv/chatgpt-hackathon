@@ -82,4 +82,5 @@ class UserStates(StatesGroup):
     suggest_functionality = State()
     calendar_nearest_events = State()
     calendar_next_week = State()
+    calendar_current_week = State()
     add_to_calendar = State()

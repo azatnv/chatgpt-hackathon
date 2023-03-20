@@ -22,19 +22,9 @@ menu_keyboard.\
     add(nearest_tree_event_button).\
     row(current_week_button, next_week_button).\
     add(event_sources_button, suggest_improvement_button)
-    # row(current_week_button).add(next_week_button)
 
 init_keyboard = types.ReplyKeyboardMarkup(
     resize_keyboard=True,
     one_time_keyboard=True
 )
 init_keyboard.add(nearest_tree_event_button).add(menu_button)
-
-link_to_menu_keyboard = types.ReplyKeyboardMarkup(
-    resize_keyboard=True,
-    one_time_keyboard=True
-)
-link_to_menu_keyboard.add(menu_button)
-
-
-
