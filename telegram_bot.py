@@ -12,7 +12,7 @@ from inline_buttons.inline_buttons import link_to_menu_keyboard, menu_keyboard
 from main import get_tree_nearest_events, all_groups, get_current_week_events, get_next_week_events, \
     set_suggested_event_source, set_suggested_functionality, get_current_and_next_week_events, set_user_start_date, \
     set_user_last_date, get_users_count
-from utils import get_date_string, UserStates
+from utils import get_date_string, UserStates, make_google_cal_url
 
 load_dotenv(find_dotenv())
 #  Забираем токен подключения, данные для подключения к БД
@@ -97,9 +97,10 @@ async def send_tree_nearest_events(message):
         event_place = f"📍 {event[3]}" if event[3] else ""
         event_short_desc = event[4]
         comm_name = event[6]
+        event_date_link = make_google_cal_url(event_title, event[2], event[3] if event[3] else "", comm_name)
         event_text = \
             f"\n\n⚡️{comm_name} | <a href='{post_url}'>{event_title}</a>" \
-            f"\n🗓 {event_date} {event_place}" \
+            f"\n🗓 <a href='{event_date_link}'>{event_date}</a> {event_place}" \
             f"\n{event_short_desc}"
         event_list.append(event_text)
     await bot.send_message(
