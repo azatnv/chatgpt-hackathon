@@ -92,6 +92,34 @@ def get_events_from_date_interval(from_date, to_date):
     return rows
 
 
+def get_actual_events():
+    conn = psycopg2.connect(
+        database=DATABASE_NAME,
+        user=DATABASE_USER,
+        password=DATABASE_PASSWORD,
+        host=DATABASE_HOST,
+        port=DATABASE_PORT
+    )
+    cur = conn.cursor()
+    cur.execute(f"""
+            SELECT 
+                post.post_url, 
+                post.event_title,
+                post.event_date,
+                post.event_place,
+                post.event_short_desc,
+                post.event_picture_url,
+                community.comm_name
+            FROM post
+            JOIN community ON post.comm_id = community.comm_id
+            WHERE post.event_date >= '{str(date.today())}'
+            ORDER BY post.event_date
+            """)
+    rows = cur.fetchall()
+    conn.close()
+    return rows
+
+
 def get_current_week_events():
     current_day = date.today()
     current_sunday = get_current_sunday()
