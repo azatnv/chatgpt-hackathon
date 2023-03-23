@@ -62,10 +62,28 @@ def get_date_string(date):
     day = date.day
     hour = date.hour
     minute = date.minute
+
+    today = datetime.date.today()
+    if today.day == date.day and \
+            today.month == date.month and \
+            today.year == date.year:
+        if hour == 0:
+            return f"Сегодня"
+        else:
+            return f"Сегодня в {hour:02d}:{minute:02d}"
+
+    if (today + datetime.timedelta(1)).day == date.day and \
+            (today + datetime.timedelta(1)).month == date.month and \
+            (today + datetime.timedelta(1)).year == date.year:
+        if hour == 0:
+            return f"Завтра"
+        else:
+            return f"Завтра в {hour:02d}:{minute:02d}"
+
     if hour == 0:
-        return f"{day} {month}"
+        return f"{day} {month} ({short_str_day})"
     else:
-        return f"{day} {month} ({short_str_day}) {hour:02d}:{minute:02d}"
+        return f"{day} {month} ({short_str_day}) в {hour:02d}:{minute:02d}"
 
 
 def make_google_cal_url(event_title, event_date, event_place, comm_name, event_short_desc):
