@@ -9,11 +9,11 @@ from datetime import date
 from utils import get_current_sunday, get_next_monday, get_next_sunday
 
 load_dotenv(find_dotenv())
-DATABASE_NAME= os.environ.get('DATABASE_NAME')
-DATABASE_USER= os.environ.get('DATABASE_USER')
-DATABASE_PASSWORD= os.environ.get('DATABASE_PASSWORD')
-DATABASE_HOST= os.environ.get('DATABASE_HOST')
-DATABASE_PORT= os.environ.get('DATABASE_PORT')
+DATABASE_NAME = os.environ.get('DATABASE_NAME')
+DATABASE_USER = os.environ.get('DATABASE_USER')
+DATABASE_PASSWORD = os.environ.get('DATABASE_PASSWORD')
+DATABASE_HOST = os.environ.get('DATABASE_HOST')
+DATABASE_PORT = os.environ.get('DATABASE_PORT')
 
 
 def get_tree_nearest_events():
@@ -120,6 +120,10 @@ def get_actual_events():
     return rows
 
 
+def get_week_events():
+    return get_events_from_date_interval(date.today(), date.today() + datetime.timedelta(7))
+
+
 def get_current_week_events():
     current_day = date.today()
     current_sunday = get_current_sunday()
@@ -199,12 +203,28 @@ def get_users_count():
         port=DATABASE_PORT
     )
     cur = conn.cursor()
-    cur.execute("SELECT count(*) user_id from users")
+    cur.execute("SELECT count(*) user_id FROM users")
     rows = cur.fetchall()
     count = rows[0][0]
     conn.close()
 
     return count
+
+
+def get_user_id_list():
+    conn = psycopg2.connect(
+        database=DATABASE_NAME,
+        user=DATABASE_USER,
+        password=DATABASE_PASSWORD,
+        host=DATABASE_HOST,
+        port=DATABASE_PORT
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT user_id FROM users")
+    rows = cur.fetchall()
+    conn.close()
+
+    return rows
 
 
 def set_user_start_date(user_id, username):
