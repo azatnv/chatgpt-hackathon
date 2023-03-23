@@ -181,8 +181,8 @@ def check_new_user(user_id, username):
     cur.execute(f"SELECT user_id FROM users WHERE user_id = {user_id}")
     rows = cur.fetchall()
     if len(rows) == 0:
-        cur.execute(f"INSERT INTO users (user_id, username) "
-                    f"VALUES ({user_id}, '{username}')")
+        cur.execute(f"INSERT INTO users (user_id, username, event_clicks, community_clicks, calendar_clicks) "
+                    f"VALUES ({user_id}, '{username}', 0, 0, 0)")
         is_new = True
         conn.commit()
     conn.close()
@@ -223,7 +223,7 @@ def set_user_start_date(user_id, username):
         conn.close()
 
 
-def set_user_last_date(user_id, username):
+def set_user_last_date(user_id, username, counter=""):
     check_new_user(user_id, username)
     conn = psycopg2.connect(
         database=DATABASE_NAME,
@@ -235,5 +235,21 @@ def set_user_last_date(user_id, username):
     cur = conn.cursor()
     cur.execute(f"UPDATE users SET user_last_date = TIMESTAMP '{datetime.datetime.now()}' WHERE user_id = {user_id}")
     cur.execute(f"UPDATE users SET username = '{username}' WHERE user_id = {user_id}")
+    match counter:
+        case "event":
+            cur.execute(f"SELECT event_clicks FROM users WHERE user_id = {user_id}")
+            rows = cur.fetchall()
+            count = rows[0][0]
+            cur.execute(f"UPDATE users SET event_clicks = '{count + 1}' WHERE user_id = {user_id}")
+        case "community":
+            cur.execute(f"SELECT community_clicks FROM users WHERE user_id = {user_id}")
+            rows = cur.fetchall()
+            count = rows[0][0]
+            cur.execute(f"UPDATE users SET community_clicks = '{count + 1}' WHERE user_id = {user_id}")
+        case "calendar":
+            cur.execute(f"SELECT calendar_clicks FROM users WHERE user_id = {user_id}")
+            rows = cur.fetchall()
+            count = rows[0][0]
+            cur.execute(f"UPDATE users SET calendar_clicks = '{count + 1}' WHERE user_id = {user_id}")
     conn.commit()
     conn.close()

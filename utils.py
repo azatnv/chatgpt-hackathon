@@ -68,11 +68,11 @@ def get_date_string(date):
         return f"{day} {month} ({short_str_day}) {hour:02d}:{minute:02d}"
 
 
-def make_google_cal_url(event_title, event_date, event_place, comm_name):
+def make_google_cal_url(event_title, event_date, event_place, comm_name, event_short_desc):
     url = "https://www.google.com/calendar/render?action=TEMPLATE&"
     event_end_date = (event_date - datetime.timedelta(hours=2)).strftime("%Y%m%dT%H%M%SZ")
     event_date = (event_date - datetime.timedelta(hours=3)).strftime("%Y%m%dT%H%M%SZ")
-    params = {"text": event_title, "details": comm_name, "location": event_place, "dates": event_date + "/" + event_end_date}
+    params = {"text": event_title, "details": comm_name + "\n" + event_short_desc, "location": event_place, "dates": event_date + "/" + event_end_date}
     return url + urlencode(params)
 
 

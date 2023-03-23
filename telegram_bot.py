@@ -85,7 +85,7 @@ def get_event_list_message_text(events):
         event_place = f"📍 {event[3]}" if event[3] else ""
         event_short_desc = event[4]
         comm_name = event[6]
-        event_date_link = make_google_cal_url(event_title, event[2], event[3] if event[3] else "", comm_name)
+        event_date_link = make_google_cal_url(event_title, event[2], event[3] if event[3] else "", comm_name, event_short_desc)
         event_text = \
             f"\n\n⚡️{comm_name} | <a href='{post_url}'>{event_title}</a>" \
             f"\n🗓 <a href='{event_date_link}'>{event_date}</a> {event_place}" \
@@ -96,13 +96,13 @@ def get_event_list_message_text(events):
 
 @bot.message_handler(regexp=r"^Мероприятия")
 async def get_events(message):
-    set_user_last_date(message.from_user.id, message.from_user.username)
+    set_user_last_date(message.from_user.id, message.from_user.username, "event")
 
     events = get_actual_events()
 
     current_week_events_inline_keyboard = types.InlineKeyboardMarkup()
-    current_week_events_calendar_button = types.InlineKeyboardButton("Добавить в календарь",
-                                                                     callback_data=str(UserStates.calendar_selection))
+    current_week_events_calendar_button = types.InlineKeyboardButton("Добавить все в календарь",
+                                                                     callback_data=str(UserStates.add_to_calendar))
     menu_inline_button = types.InlineKeyboardButton("Меню", callback_data=str(UserStates.default))
     if len(events) > 5:
         events_next_page_button = types.InlineKeyboardButton("Далее", callback_data="next_events_page_0")
@@ -124,7 +124,7 @@ async def get_events(message):
 
 @bot.message_handler(regexp=r"^Источники мероприятий")
 async def send_groups_info(message):
-    set_user_last_date(message.from_user.id, message.from_user.username)
+    set_user_last_date(message.from_user.id, message.from_user.username, "community")
 
     communities = all_groups
     communities_list = []
@@ -194,118 +194,50 @@ async def suggest_query_handler(call):
         await bot.set_state(call.from_user.id, UserStates.suggest_functionality, call.message.chat.id)
 
 
-@bot.callback_query_handler(func=lambda call: call.data == str(UserStates.calendar_selection))
-async def calendar_query_handler(call):
-    events = get_actual_events()
-    event_list = list()
-    for event in events:
-        event_title = event[1]
-        event_date = get_date_string(event[2])
-        event_place = event[3] if event[3] else ""
-        comm_name = event[6]
-        event_list.append([event_title, event_date, event_place, comm_name])
-
-    # Отправляем меню с выбором мероприятий
-    button_list = list()
-    for i, event in enumerate(event_list, start=0):
-        button_list.append(types.InlineKeyboardButton(event[0], callback_data=f"select_event_to_cal_{i}"))
-    events_keyboard = types.InlineKeyboardMarkup().add(*button_list, row_width=1)
-    events_keyboard.row(
-        types.InlineKeyboardButton("Добавить", callback_data=str(UserStates.add_to_calendar)),
-        types.InlineKeyboardButton("Меню", callback_data=str(UserStates.default)))
-
-    await bot.set_state(call.from_user.id, UserStates.default, call.message.chat.id)
-    await bot.answer_callback_query(call.id)
-    await bot.send_message(
-        call.message.chat.id,
-        "Отметьте мероприятия, которые необходимо добавить:",
-        disable_web_page_preview=True,
-        reply_markup=events_keyboard
-    )
-
-
 @bot.callback_query_handler(func=lambda call: call.data == str(UserStates.add_to_calendar))
 async def add_to_calendar(call):
-    events_keyboard = call.message.reply_markup.keyboard
-    events_button_text = list()
-    for row in events_keyboard:
-        if len(row) == 1:
-            button_text = row[0].text
-        else:
-            continue
-        if "✅" in button_text:
-            events_button_text.append(button_text.replace("✅ ", ""))
-
-    await bot.delete_message(call.message.chat.id, call.message.message_id)
+    set_user_last_date(call.from_user.id, call.from_user.username, "calendar")
 
     events = get_actual_events()
     event_list_add = list()
     for event in events:
         event_title = event[1]
-        if event_title not in events_button_text:
-            continue
         event_date = event[2]
         event_place = event[3] if event[3] else ""
+        event_short_desc = event[4]
         comm_name = event[6]
-        event_list_add.append([event_title, event_date, event_place, comm_name])
+        event_list_add.append([event_title, event_date, event_place, comm_name + "\n" + event_short_desc])
 
-    if len(event_list_add) == 0:
-        await bot.answer_callback_query(
-            call.id,
-            "Мероприятия не выбраны"
-        )
-        await bot.send_message(
-            call.message.chat.id,
-            "Мероприятия не были выбраны",
-            disable_web_page_preview=True,
-            reply_markup=menu_keyboard
-        )
-    else:
-        cal = Calendar()
-        cal.add("prodid", "-//Levart//levart_bot//")
-        cal.add("version", "2.0")
-        cal.add("name", "Мероприятия от levart")
-        cal.add("timezone", "Europe/Moscow")
-        for event in event_list_add:
-            cal_event = Event()
-            cal_event.add('summary', event[0])
-            cal_event.add('dtstart', event[1])
-            cal_event.add('location', vText(event[2]))
-            cal_event.add('description', event[3])
-            cal.add_component(cal_event)
-        await bot.answer_callback_query(
-            call.id,
-            "Мероприятия добавлены"
-        )
-        await bot.send_message(
-            call.message.chat.id,
-            "Загрузите файл ICS, чтобы добавить в календарь.\n"
-            "Также можно добавить каждое мероприятие отдельно, нажав на ссылки в сообщении.",
-            disable_web_page_preview=True,
-            reply_markup=menu_keyboard
-        )
-        directory = tempfile.mkdtemp()
-        f = open(os.path.join(directory, f'Мероприятия - {call.from_user.username}.ics'), 'wb+')
-        f.write(cal.to_ical())
-        f.close()
-        with open(os.path.join(directory, f'Мероприятия - {call.from_user.username}.ics'), 'rb') as f:
-            await bot.send_document(call.message.chat.id, f)
-        f.close()
-
-
-@bot.callback_query_handler(func=lambda call: "select_event_to_cal_" in call.data)
-async def select_event_calendar_query_handler(call):
-    await bot.answer_callback_query(call.id)
-    selected_button_n = int(call.data.replace("select_event_to_cal_", ""))
-    events_keyboard = call.message.reply_markup.keyboard
-    selected_button_text = events_keyboard[selected_button_n][0].text
-    if "✅" in selected_button_text:
-        new_button_text = selected_button_text.replace("✅ ", "")
-    else:
-        new_button_text = "✅ " + selected_button_text
-    events_keyboard[selected_button_n][0].text = new_button_text
-    await bot.edit_message_reply_markup(call.message.chat.id, call.message.id,
-                                        reply_markup=types.InlineKeyboardMarkup(events_keyboard))
+    cal = Calendar()
+    cal.add("prodid", "-//Levart//levart_bot//")
+    cal.add("version", "2.0")
+    cal.add("name", "Мероприятия от levart")
+    cal.add("timezone", "Europe/Moscow")
+    for event in event_list_add:
+        cal_event = Event()
+        cal_event.add('summary', event[0])
+        cal_event.add('dtstart', event[1])
+        cal_event.add('location', vText(event[2]))
+        cal_event.add('description', event[3])
+        cal.add_component(cal_event)
+    await bot.answer_callback_query(
+        call.id,
+        "Мероприятия добавлены"
+    )
+    await bot.send_message(
+        call.message.chat.id,
+        "Загрузите файл ICS, чтобы добавить в календарь.\n"
+        "Также можно добавить каждое мероприятие отдельно, нажав на ссылки в сообщении.",
+        disable_web_page_preview=True,
+        reply_markup=menu_keyboard
+    )
+    directory = tempfile.mkdtemp()
+    f = open(os.path.join(directory, f'Мероприятия - {call.from_user.username}.ics'), 'wb+')
+    f.write(cal.to_ical())
+    f.close()
+    with open(os.path.join(directory, f'Мероприятия - {call.from_user.username}.ics'), 'rb') as f:
+        await bot.send_document(call.message.chat.id, f)
+    f.close()
 
 
 @bot.callback_query_handler(func=lambda call: "_events_page_" in call.data)
