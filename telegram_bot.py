@@ -15,11 +15,11 @@ from utils import get_date_string, UserStates, make_google_cal_url
 
 load_dotenv(find_dotenv())
 #  Забираем токен подключения, данные для подключения к БД
-DATABASE_URL= os.environ.get('DATABASE_URL')
-DATABASE_USER= os.environ.get('DATABASE_USER')
-DATABASE_PASSWORD= os.environ.get('DATABASE_PASSWORD')
-DATABASE_HOST= os.environ.get('DATABASE_HOST')
-DATABASE_PORT= os.environ.get('DATABASE_PORT')
+DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_USER = os.environ.get('DATABASE_USER')
+DATABASE_PASSWORD = os.environ.get('DATABASE_PASSWORD')
+DATABASE_HOST = os.environ.get('DATABASE_HOST')
+DATABASE_PORT = os.environ.get('DATABASE_PORT')
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 bot = AsyncTeleBot(BOT_TOKEN)
 
@@ -38,9 +38,9 @@ async def send_welcome(message: types.Message):
 С этого момента все мероприятия с тобой в удобной форме.
 
 Наши партнеры: [Gigaschool](https://gigaschool.ru/)""",
-        reply_markup = init_keyboard,
-        parse_mode = "Markdown",
-        disable_web_page_preview= True
+        reply_markup=init_keyboard,
+        parse_mode="Markdown",
+        disable_web_page_preview=True
     )
     await bot.send_message(
         message.chat.id,
@@ -82,14 +82,21 @@ def get_event_list_message_text(events):
         post_url = event[0]
         event_title = event[1]
         event_date = get_date_string(event[2])
-        event_place = f"📍 {event[3]}" if event[3] else ""
+        event_place = ""
+        if event[3]:
+            if "онлайн" in event[3].lower() or "online" in event[3].lower():
+                event_place = f"📍 онлайн"
+            else:
+                event_place = f"📍 оффлайн"
         event_short_desc = event[4]
         comm_name = event[6]
-        event_date_link = make_google_cal_url(event_title, event[2], event[3] if event[3] else "", comm_name, event_short_desc)
+        event_date_link = make_google_cal_url(event_title, event[2], event[3] if event[3] else "", comm_name,
+                                              event_short_desc)
         event_text = \
-            f"\n\n⚡️{comm_name} | <a href='{post_url}'>{event_title}</a>" \
-            f"\n🗓 <a href='{event_date_link}'>{event_date}</a> {event_place}" \
-            f"\n{event_short_desc}"
+            f"\n\n🦄️ <a href='{post_url}'>{event_title}</a>" \
+            f"\n🗓 {event_date} {event_place}" \
+            f"\n{event_short_desc}"\
+            f"\n<a href='{event_date_link}'>Добавить в календарь -></a>"
         event_list.append(event_text)
     return event_list
 
@@ -145,10 +152,13 @@ async def suggest_improvement(message):
     set_user_last_date(message.from_user.id, message.from_user.username)
 
     suggest_menu_inline_keyboard = types.InlineKeyboardMarkup()
-    suggest_event_source_button = types.InlineKeyboardButton("Посоветовать источник", callback_data=str(UserStates.suggest_source))
-    suggest_functionality_button = types.InlineKeyboardButton("Посоветовать функционал", callback_data=str(UserStates.suggest_functionality))
+    suggest_event_source_button = types.InlineKeyboardButton("Посоветовать источник",
+                                                             callback_data=str(UserStates.suggest_source))
+    suggest_functionality_button = types.InlineKeyboardButton("Посоветовать функционал",
+                                                              callback_data=str(UserStates.suggest_functionality))
     menu_inline_button = types.InlineKeyboardButton("Меню", callback_data=str(UserStates.default))
-    suggest_menu_inline_keyboard.add(suggest_event_source_button, suggest_functionality_button, menu_inline_button, row_width=1)
+    suggest_menu_inline_keyboard.add(suggest_event_source_button, suggest_functionality_button, menu_inline_button,
+                                     row_width=1)
     await bot.send_message(
         message.chat.id,
         "Подскажите, как нам стать лучше:",
@@ -253,7 +263,8 @@ async def select_page_event_query_handler(call):
                                                                  callback_data=f"next_events_page_{current_page + 1}")
             events_prev_page_button = types.InlineKeyboardButton("Назад",
                                                                  callback_data=f"prev_events_page_{current_page + 1}")
-            events_curr_page_button = types.InlineKeyboardButton(f"{current_page + 2}/{len(events)//5+1}", callback_data="echo")
+            events_curr_page_button = types.InlineKeyboardButton(f"{current_page + 2}/{len(events) // 5 + 1}",
+                                                                 callback_data="echo")
             events_keyboard[0] = [events_prev_page_button, events_curr_page_button, events_next_page_button]
             events = events[(5 * (current_page + 1)):(5 * (current_page + 2))]
         else:
@@ -267,7 +278,8 @@ async def select_page_event_query_handler(call):
                                                                  callback_data=f"next_events_page_{current_page - 1}")
             events_prev_page_button = types.InlineKeyboardButton("Назад",
                                                                  callback_data=f"prev_events_page_{current_page - 1}")
-            events_curr_page_button = types.InlineKeyboardButton(f"{current_page}/{len(events)//5+1}", callback_data="echo")
+            events_curr_page_button = types.InlineKeyboardButton(f"{current_page}/{len(events) // 5 + 1}",
+                                                                 callback_data="echo")
             events_keyboard[0] = [events_prev_page_button, events_curr_page_button, events_next_page_button]
             events = events[(5 * (current_page - 1)):(5 * current_page)]
         else:
@@ -303,7 +315,7 @@ async def echo_all(message: types.Message):
             user_url_message_modified = "http://" + user_message_text
         regex = re.compile(
             r'^https?://'  # http:// or https://
-            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?)' #domain
+            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?)'  # domain
             r'(?:/?|[/?]\S+)$', re.IGNORECASE)
         if regex.search(user_url_message_modified):
             await bot.set_state(user_id, UserStates.default, message.chat.id)
@@ -340,4 +352,5 @@ async def echo_all(message: types.Message):
 
 print("bot started >>> GO,GO,GO!")
 import asyncio
+
 asyncio.run(bot.polling())
