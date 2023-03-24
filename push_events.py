@@ -42,10 +42,10 @@ def get_week_events_text():
     current_week_events_calendar_button = types.InlineKeyboardButton("Добавить все в календарь",
                                                                      callback_data=str(UserStates.add_to_calendar_week))
     menu_inline_button = types.InlineKeyboardButton("Меню", callback_data=str(UserStates.default))
-    if len(events) > 5:
+    if len(events) > 4:
         events_next_page_button = types.InlineKeyboardButton("Далее", callback_data="next_pushevents_page_0")
         events_inline_keyboard.add(events_next_page_button)
-        events = events[:5]
+        events = events[:4]
     events_inline_keyboard.add(current_week_events_calendar_button, menu_inline_button, row_width=1)
 
     event_list = get_event_list_message_text(events)

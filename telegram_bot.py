@@ -42,15 +42,6 @@ async def send_welcome(message: types.Message):
         parse_mode="Markdown",
         disable_web_page_preview=True
     )
-    await bot.send_message(
-        message.chat.id,
-        """
-Пока что бот находится в тестовом режиме и работает не стабильно. 
-
-Мы доделываем функционал, скоро все будет работать как надо.
-Оставайтесь с нами, следите за проектом и обязательно оставляйте свои пожелания по новым функциям!
-"""
-    )
 
 
 @bot.message_handler(commands=["users_count"])
@@ -111,10 +102,10 @@ async def get_events(message):
     current_week_events_calendar_button = types.InlineKeyboardButton("Добавить все в календарь",
                                                                      callback_data=str(UserStates.add_to_calendar_all))
     menu_inline_button = types.InlineKeyboardButton("Меню", callback_data=str(UserStates.default))
-    if len(events) > 5:
+    if len(events) > 4:
         events_next_page_button = types.InlineKeyboardButton("Далее", callback_data="next_events_page_0")
         events_inline_keyboard.add(events_next_page_button)
-        events = events[:5]
+        events = events[:4]
     events_inline_keyboard.add(current_week_events_calendar_button, menu_inline_button, row_width=1)
 
     pre_speech = "Анонсы мероприятий:"
@@ -270,35 +261,35 @@ async def select_page_event_query_handler(call):
     events_keyboard = call.message.reply_markup.keyboard
     events = get_actual_events()
     if command == "next":
-        if len(events) > 5 * (current_page + 2):
+        if len(events) > 4 * (current_page + 2):
             events_next_page_button = types.InlineKeyboardButton("Далее",
                                                                  callback_data=f"next_events_page_{current_page + 1}")
             events_prev_page_button = types.InlineKeyboardButton("Назад",
                                                                  callback_data=f"prev_events_page_{current_page + 1}")
-            events_curr_page_button = types.InlineKeyboardButton(f"{current_page + 2}/{len(events) // 5 + 1}",
+            events_curr_page_button = types.InlineKeyboardButton(f"{current_page + 2}/{len(events) // 4 + 1}",
                                                                  callback_data="echo")
             events_keyboard[0] = [events_prev_page_button, events_curr_page_button, events_next_page_button]
-            events = events[(5 * (current_page + 1)):(5 * (current_page + 2))]
+            events = events[(4 * (current_page + 1)):(4 * (current_page + 2))]
         else:
             events_prev_page_button = types.InlineKeyboardButton("Назад",
                                                                  callback_data=f"prev_events_page_{current_page + 1}")
             events_keyboard[0] = [events_prev_page_button]
-            events = events[(5 * (current_page + 1)):len(events)]
+            events = events[(4 * (current_page + 1)):len(events)]
     else:
         if current_page > 1:
             events_next_page_button = types.InlineKeyboardButton("Далее",
                                                                  callback_data=f"next_events_page_{current_page - 1}")
             events_prev_page_button = types.InlineKeyboardButton("Назад",
                                                                  callback_data=f"prev_events_page_{current_page - 1}")
-            events_curr_page_button = types.InlineKeyboardButton(f"{current_page}/{len(events) // 5 + 1}",
+            events_curr_page_button = types.InlineKeyboardButton(f"{current_page}/{len(events) // 4 + 1}",
                                                                  callback_data="echo")
             events_keyboard[0] = [events_prev_page_button, events_curr_page_button, events_next_page_button]
-            events = events[(5 * (current_page - 1)):(5 * current_page)]
+            events = events[(4 * (current_page - 1)):(4 * current_page)]
         else:
             events_next_page_button = types.InlineKeyboardButton("Далее",
                                                                  callback_data=f"next_events_page_{current_page - 1}")
             events_keyboard[0] = [events_next_page_button]
-            events = events[:5]
+            events = events[:4]
 
     pre_speech = "Анонсы мероприятий:"
     event_list = get_event_list_message_text(events)
@@ -322,33 +313,33 @@ async def select_push_page_event_query_handler(call):
     events_keyboard = call.message.reply_markup.keyboard
     events = get_week_events()
     if command == "next":
-        if len(events) > 5 * (current_page + 2):
+        if len(events) > 4 * (current_page + 2):
             events_next_page_button = types.InlineKeyboardButton("Далее",
                                                                  callback_data=f"next_pushevents_page_{current_page + 1}")
             events_prev_page_button = types.InlineKeyboardButton("Назад",
                                                                  callback_data=f"prev_pushevents_page_{current_page + 1}")
-            events_curr_page_button = types.InlineKeyboardButton(f"{current_page + 2}/{len(events)//5+1}", callback_data="echo")
+            events_curr_page_button = types.InlineKeyboardButton(f"{current_page + 2}/{len(events)//4+1}", callback_data="echo")
             events_keyboard[0] = [events_prev_page_button, events_curr_page_button, events_next_page_button]
-            events = events[(5 * (current_page + 1)):(5 * (current_page + 2))]
+            events = events[(4 * (current_page + 1)):(4 * (current_page + 2))]
         else:
             events_prev_page_button = types.InlineKeyboardButton("Назад",
                                                                  callback_data=f"prev_pushevents_page_{current_page + 1}")
             events_keyboard[0] = [events_prev_page_button]
-            events = events[(5 * (current_page + 1)):len(events)]
+            events = events[(4 * (current_page + 1)):len(events)]
     else:
         if current_page > 1:
             events_next_page_button = types.InlineKeyboardButton("Далее",
                                                                  callback_data=f"next_pushevents_page_{current_page - 1}")
             events_prev_page_button = types.InlineKeyboardButton("Назад",
                                                                  callback_data=f"prev_pushevents_page_{current_page - 1}")
-            events_curr_page_button = types.InlineKeyboardButton(f"{current_page}/{len(events)//5+1}", callback_data="echo")
+            events_curr_page_button = types.InlineKeyboardButton(f"{current_page}/{len(events)//4+1}", callback_data="echo")
             events_keyboard[0] = [events_prev_page_button, events_curr_page_button, events_next_page_button]
-            events = events[(5 * (current_page - 1)):(5 * current_page)]
+            events = events[(4 * (current_page - 1)):(4 * current_page)]
         else:
             events_next_page_button = types.InlineKeyboardButton("Далее",
                                                                  callback_data=f"next_pushevents_page_{current_page - 1}")
             events_keyboard[0] = [events_next_page_button]
-            events = events[:5]
+            events = events[:4]
 
     pre_speech = "Я подготовил для тебя мероприятия на ближайшую неделю:"
     event_list = get_event_list_message_text(events)
