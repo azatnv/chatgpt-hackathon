@@ -6,7 +6,7 @@ from dotenv import load_dotenv, find_dotenv
 from telebot import types
 from telebot.async_telebot import AsyncTeleBot
 
-from main import get_week_events, get_user_id_list
+from dao import get_week_events, get_user_id_list
 from utils import UserStates, get_date_string, make_google_cal_url
 
 load_dotenv(find_dotenv())

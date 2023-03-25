@@ -1,33 +1,6 @@
 import datetime
 from urllib.parse import urlencode
-
 from telebot.asyncio_handler_backends import StatesGroup, State
-
-
-def get_next_weekday(date, weekday):  # weekday: 0 = Monday, 1=Tuesday, 2=Wednesday...
-    days_ahead = weekday - date.weekday()
-    if days_ahead <= 0:  # Target day already happened this week
-        days_ahead += 7
-    return date + datetime.timedelta(days_ahead)
-
-
-def get_next_monday():
-    today = datetime.date.today()
-    next_monday = get_next_weekday(today, 0)
-    return next_monday
-
-
-def get_current_sunday():
-    next_monday = get_next_monday()
-    current_sunday = next_monday - datetime.timedelta(1)
-    return current_sunday
-
-
-def get_next_sunday():
-    next_monday = get_next_monday()  # next monday
-    next_sunday = get_next_weekday(next_monday, 6)
-    return next_sunday
-
 
 month_map = {
     1: "января",
@@ -93,6 +66,31 @@ def make_google_cal_url(event_title, event_date, event_place, comm_name, event_s
     params = {"text": event_title, "details": comm_name + "\n\n" + event_short_desc + "\n\n" + post_url,
               "location": event_place, "dates": event_date + "/" + event_end_date}
     return url + urlencode(params)
+
+
+def get_event_list_message_text(events):
+    event_list = []
+    for i, event in enumerate(events, start=1):
+        post_url = event[0]
+        event_title = event[1]
+        event_date = get_date_string(event[2])
+        event_place = ""
+        if event[3]:
+            if "онлайн" in event[3].lower() or "online" in event[3].lower():
+                event_place = f"📍 онлайн"
+            else:
+                event_place = f"📍 оффлайн"
+        event_short_desc = event[4]
+        comm_name = event[6]
+        event_date_link = make_google_cal_url(event_title, event[2], event[3] if event[3] else "", comm_name,
+                                              event_short_desc, post_url)
+        event_text = \
+            f"\n\n🦄️ <a href='{post_url}'>{event_title}</a>" \
+            f"\n🗓 {event_date} {event_place}" \
+            f"\n{event_short_desc}" \
+            f"\n<a href='{event_date_link}'>Добавить в календарь -></a>"
+        event_list.append(event_text)
+    return event_list
 
 
 class UserStates(StatesGroup):

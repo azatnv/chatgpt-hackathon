@@ -3,10 +3,7 @@ import datetime
 import psycopg2
 import os
 from dotenv import load_dotenv, find_dotenv
-
 from datetime import date
-
-from utils import get_current_sunday, get_next_monday, get_next_sunday
 
 load_dotenv(find_dotenv())
 DATABASE_NAME = os.environ.get('DATABASE_NAME')
@@ -14,36 +11,6 @@ DATABASE_USER = os.environ.get('DATABASE_USER')
 DATABASE_PASSWORD = os.environ.get('DATABASE_PASSWORD')
 DATABASE_HOST = os.environ.get('DATABASE_HOST')
 DATABASE_PORT = os.environ.get('DATABASE_PORT')
-
-
-def get_tree_nearest_events():
-    current_day = date.today()
-    conn = psycopg2.connect(
-        database = DATABASE_NAME,
-        user = DATABASE_USER,
-        password = DATABASE_PASSWORD,
-        host = DATABASE_HOST,
-        port = DATABASE_PORT
-    )
-    cur = conn.cursor()
-    cur.execute(f"""
-    SELECT 
-        post.post_url, 
-        post.event_title,
-        post.event_date,
-        post.event_place,
-        post.event_short_desc,
-        post.event_picture_url,
-        community.comm_name
-    FROM post
-    JOIN community ON post.comm_id = community.comm_id
-    WHERE post.event_date >= '{str(current_day)}'
-    ORDER BY post.event_date
-    LIMIT 3;
-    """)
-    rows = cur.fetchall()
-    conn.close()
-    return rows
 
 
 def get_communities():
@@ -112,7 +79,7 @@ def get_actual_events():
                 community.comm_name
             FROM post
             JOIN community ON post.comm_id = community.comm_id
-            WHERE post.event_date >= '{str(date.today())}'
+            WHERE post.event_date >= '{str(datetime.datetime.now())}'
             ORDER BY post.event_date
             """)
     rows = cur.fetchall()
@@ -121,25 +88,7 @@ def get_actual_events():
 
 
 def get_week_events():
-    return get_events_from_date_interval(date.today(), date.today() + datetime.timedelta(7))
-
-
-def get_current_week_events():
-    current_day = date.today()
-    current_sunday = get_current_sunday()
-    return get_events_from_date_interval(current_day, current_sunday)
-
-
-def get_next_week_events():
-    next_monday = get_next_monday()
-    next_sunday = get_next_sunday()
-    return get_events_from_date_interval(next_monday, next_sunday)
-
-
-def get_current_and_next_week_events():
-    current_day = date.today()
-    next_sunday = get_next_sunday()
-    return get_events_from_date_interval(current_day, next_sunday)
+    return get_events_from_date_interval(datetime.datetime.now(), date.today() + datetime.timedelta(7))
 
 
 def set_suggested_event_source(user_id, username, url):
