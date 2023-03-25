@@ -34,6 +34,10 @@ def run(bot):
     async def get_events(message):
         set_user_last_date(message.from_user.id, message.from_user.username, "event")
 
+        is_brief_needed = False
+        if {"кратко", "коротко", "бриф", "сводка"} & set(message.text.lower().split()):
+            is_brief_needed = True
+
         events = get_actual_events()
 
         events_inline_keyboard = types.InlineKeyboardMarkup()
@@ -42,13 +46,13 @@ def run(bot):
                                                                              UserStates.add_to_calendar_all))
         menu_inline_button = types.InlineKeyboardButton("Меню", callback_data=str(UserStates.default))
         if len(events) > 4:
-            events_next_page_button = types.InlineKeyboardButton("Далее", callback_data="next_events_page_0")
+            events_next_page_button = types.InlineKeyboardButton("Далее", callback_data=f"next_events_page_0_{1 if is_brief_needed else 0}")
             events_inline_keyboard.add(events_next_page_button)
             events = events[:4]
         events_inline_keyboard.add(current_week_events_calendar_button, menu_inline_button, row_width=1)
 
         pre_speech = "Анонсы мероприятий:"
-        event_list = get_event_list_message_text(events)
+        event_list = get_event_list_message_text(events, brief=is_brief_needed)
         await bot.send_message(
             message.chat.id,
             f"{pre_speech}"
