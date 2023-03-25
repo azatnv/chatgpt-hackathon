@@ -68,7 +68,7 @@ def make_google_cal_url(event_title, event_date, event_place, comm_name, event_s
     return url + urlencode(params)
 
 
-def get_event_list_message_text(events):
+def get_event_list_message_text(events, brief=False):
     event_list = []
     for i, event in enumerate(events, start=1):
         post_url = event[0]
@@ -84,11 +84,14 @@ def get_event_list_message_text(events):
         comm_name = event[6]
         event_date_link = make_google_cal_url(event_title, event[2], event[3] if event[3] else "", comm_name,
                                               event_short_desc, post_url)
-        event_text = \
-            f"\n\n🦄️ <a href='{post_url}'>{event_title}</a>" \
-            f"\n🗓 {event_date} {event_place}" \
-            f"\n{event_short_desc}" \
-            f"\n<a href='{event_date_link}'>Добавить в календарь -></a>"
+        if not brief:
+            event_text = \
+                f"\n\n🦄️ <a href='{post_url}'>{event_title}</a>" \
+                f"\n🗓 {event_date} {event_place}" \
+                f"\n{event_short_desc}"\
+                f"\n<a href='{event_date_link}'>Добавить в календарь -></a>"
+        else:
+            event_text = f"\n\n🗓 {event_date} {event_place} - 🦄️ <a href='{post_url}'>{event_title}</a>"
         event_list.append(event_text)
     return event_list
 
