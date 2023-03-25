@@ -101,20 +101,21 @@ async def get_events(message):
 
     events = get_actual_events()
 
+    is_brief_needed = False
+    if {"кратко", "коротко", "бриф", "сводка"} & set(message.text.lower().split()):
+        is_brief_needed = True
+
     events_inline_keyboard = types.InlineKeyboardMarkup()
     current_week_events_calendar_button = types.InlineKeyboardButton("Добавить все в календарь",
                                                                      callback_data=str(UserStates.add_to_calendar_all))
     menu_inline_button = types.InlineKeyboardButton("Меню", callback_data=str(UserStates.default))
     if len(events) > 4:
-        events_next_page_button = types.InlineKeyboardButton("Далее", callback_data="next_events_page_0")
+        events_next_page_button = types.InlineKeyboardButton("Далее", callback_data=f"next_events_page_0_{1 if is_brief_needed else 0}")
         events_inline_keyboard.add(events_next_page_button)
         events = events[:4]
     events_inline_keyboard.add(current_week_events_calendar_button, menu_inline_button, row_width=1)
 
     pre_speech = "Анонсы мероприятий:"
-    is_brief_needed = False
-    if {"кратко", "коротко", "бриф", "сводка"} & set(message.text.lower().split()):
-        is_brief_needed = True
     event_list = get_event_list_message_text(events, brief=is_brief_needed)
     await bot.send_message(
         message.chat.id,
@@ -262,43 +263,45 @@ async def add_to_calendar_week(call):
 @bot.callback_query_handler(func=lambda call: "_events_page_" in call.data)
 async def select_page_event_query_handler(call):
     await bot.answer_callback_query(call.id)
-    current_page = int(re.search('_events_page_(.+?)', call.data).group(1))
+    event_page_data = re.search('_events_page_(.+?)_(.+?)', call.data)
+    current_page = int(event_page_data.group(1))
+    is_brief_needed = int(event_page_data.group(2))
     command = re.search('(.+?)_events_page_', call.data).group(1)
     events_keyboard = call.message.reply_markup.keyboard
     events = get_actual_events()
     if command == "next":
         if len(events) > 4 * (current_page + 2):
             events_next_page_button = types.InlineKeyboardButton("Далее",
-                                                                 callback_data=f"next_events_page_{current_page + 1}")
+                                                                 callback_data=f"next_events_page_{current_page + 1}_{is_brief_needed}")
             events_prev_page_button = types.InlineKeyboardButton("Назад",
-                                                                 callback_data=f"prev_events_page_{current_page + 1}")
+                                                                 callback_data=f"prev_events_page_{current_page + 1}_{is_brief_needed}")
             events_curr_page_button = types.InlineKeyboardButton(f"{current_page + 2}/{len(events) // 4 + 1}",
                                                                  callback_data="echo")
             events_keyboard[0] = [events_prev_page_button, events_curr_page_button, events_next_page_button]
             events = events[(4 * (current_page + 1)):(4 * (current_page + 2))]
         else:
             events_prev_page_button = types.InlineKeyboardButton("Назад",
-                                                                 callback_data=f"prev_events_page_{current_page + 1}")
+                                                                 callback_data=f"prev_events_page_{current_page + 1}_{is_brief_needed}")
             events_keyboard[0] = [events_prev_page_button]
             events = events[(4 * (current_page + 1)):len(events)]
     else:
         if current_page > 1:
             events_next_page_button = types.InlineKeyboardButton("Далее",
-                                                                 callback_data=f"next_events_page_{current_page - 1}")
+                                                                 callback_data=f"next_events_page_{current_page - 1}_{is_brief_needed}")
             events_prev_page_button = types.InlineKeyboardButton("Назад",
-                                                                 callback_data=f"prev_events_page_{current_page - 1}")
+                                                                 callback_data=f"prev_events_page_{current_page - 1}_{is_brief_needed}")
             events_curr_page_button = types.InlineKeyboardButton(f"{current_page}/{len(events) // 4 + 1}",
                                                                  callback_data="echo")
             events_keyboard[0] = [events_prev_page_button, events_curr_page_button, events_next_page_button]
             events = events[(4 * (current_page - 1)):(4 * current_page)]
         else:
             events_next_page_button = types.InlineKeyboardButton("Далее",
-                                                                 callback_data=f"next_events_page_{current_page - 1}")
+                                                                 callback_data=f"next_events_page_{current_page - 1}_{is_brief_needed}")
             events_keyboard[0] = [events_next_page_button]
             events = events[:4]
 
     pre_speech = "Анонсы мероприятий:"
-    event_list = get_event_list_message_text(events)
+    event_list = get_event_list_message_text(events, brief=bool(is_brief_needed))
 
     await bot.delete_message(call.message.chat.id, call.message.message_id)
     await bot.send_message(
