@@ -5,6 +5,8 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from datetime import date
 
+from utils import topics2tag_id
+
 load_dotenv(find_dotenv())
 DATABASE_NAME = os.environ.get('DATABASE_NAME')
 DATABASE_USER = os.environ.get('DATABASE_USER')
@@ -70,6 +72,31 @@ def get_actual_events():
             OR post.event_date = '{str(datetime.datetime(date.today().year, date.today().month, date.today().day))}'
             ORDER BY post.event_date
             """)
+    rows = cur.fetchall()
+
+    return rows
+
+
+def get_actual_events_by_topic(topic_name: str):
+    tag_id = topics2tag_id[topic_name]
+    cur = conn.cursor()
+    cur.execute(f"""
+                SELECT 
+                    post.post_url, 
+                    post.event_title,
+                    post.event_date,
+                    post.event_place,
+                    post.event_short_desc,
+                    post.event_picture_url,
+                    community.comm_name
+                FROM tags
+                JOIN post ON tags.comm_id = post.comm_id AND tags.post_id = post.post_id
+                JOIN community ON post.comm_id = community.comm_id
+                WHERE (post.event_date >= '{str(datetime.datetime.now())}' 
+                OR post.event_date = '{str(datetime.datetime(date.today().year, date.today().month, date.today().day))}')
+                AND tags.tag_id = {tag_id}
+                ORDER BY post.event_date
+                """)
     rows = cur.fetchall()
 
     return rows

@@ -27,6 +27,25 @@ days_map = {
     6: "ВС"
 }
 
+topics2tag_id = {
+    "business": 1,
+    "career": 2,
+    "education": 3,
+    "sport": 4,
+    "culture_and_entertainment": 5,
+    "other": 6,
+}
+
+state2pre_speech = {
+    "default_events_state": "Анонсы всех мероприятий:",
+    "business": "Тематика Бизнес:",
+    "career": "Тематика Карьера:",
+    "education": "Тематика Образование:",
+    "sport": "Тематика Спорт:",
+    "culture_and_entertainment": "Тематика Культура и Развлечения:",
+    "other": "Другие мероприятия:",
+}
+
 
 def get_date_string(date):
     now_day_number = date.weekday()
@@ -103,3 +122,4 @@ class UserStates(StatesGroup):
     calendar_selection = State()
     add_to_calendar_all = State()
     add_to_calendar_week = State()
+    topic = State()

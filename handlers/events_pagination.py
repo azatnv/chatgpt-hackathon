@@ -1,15 +1,17 @@
 import re
 
-from dao import get_actual_events, get_week_events
-from telebot import types
+from telebot.types import CallbackQuery
 
-from utils import get_event_list_message_text
+from dao import get_actual_events, get_week_events, get_actual_events_by_topic
+from telebot import types, State
+
+from utils import get_event_list_message_text, UserStates, state2pre_speech
 
 
 def run(bot):
     def change_page(call, events, call_data, events_on_page):
         is_brief_needed = False
-        if call_data == "_events_page_":
+        if call_data == "_events_page_" or call_data == "_events_by_topic_page_":
             event_page_data = re.search(f'{call_data}(.+?)_(.+?)', call.data)
             current_page = int(event_page_data.group(1))
             is_brief_needed = int(event_page_data.group(2))
@@ -52,13 +54,20 @@ def run(bot):
 
         return events, events_keyboard, is_brief_needed
 
-    @bot.callback_query_handler(func=lambda call: "_events_page_" in call.data)
-    async def select_page_event_query_handler(call):
+    @bot.callback_query_handler(
+        func=lambda call: "_events_page_" in call.data)
+    async def select_page_event_query_handler(call: CallbackQuery):
         await bot.answer_callback_query(call.id)
-        events = get_actual_events()
+
+        user_state: str = await bot.get_state(call.from_user.id, call.message.chat.id)
+        if user_state == "default_events_state":
+            events = get_actual_events()
+        else:
+            events = get_actual_events_by_topic(user_state)
+
         events, events_keyboard, is_brief_needed = change_page(call, events, "_events_page_", 4)
 
-        pre_speech = "Анонсы мероприятий:"
+        pre_speech = state2pre_speech[user_state]
         event_list = get_event_list_message_text(events, brief=bool(is_brief_needed))
 
         await bot.delete_message(call.message.chat.id, call.message.message_id)
