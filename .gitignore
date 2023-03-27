@@ -3,3 +3,4 @@ __pycache__
 telegram_bot
 .venv
 .idea/
+telegram_parser
