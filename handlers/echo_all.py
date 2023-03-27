@@ -1,6 +1,6 @@
 import re
 
-from inline_buttons.inline_buttons import menu_keyboard
+from keyboard_buttons import menu_keyboard
 from dao import set_suggested_event_source, set_suggested_functionality
 from utils import UserStates
 

@@ -1,4 +1,4 @@
-from inline_buttons.inline_buttons import menu_keyboard
+from keyboard_buttons import menu_keyboard
 from dao import set_user_last_date, get_actual_events, all_groups
 from utils import UserStates, get_event_list_message_text
 from telebot import types
