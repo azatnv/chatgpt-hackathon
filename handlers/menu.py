@@ -67,11 +67,16 @@ def run(bot):
         set_user_last_date(message.from_user.id, message.from_user.username, "community")
 
         communities = all_groups
-        communities_list = []
+        communities_list = {"vk": [], "tg": []}
         for i in communities:
-            communities_text = f" 🌐 {i[0]}"
-            communities_list.append(communities_text)
-        communities_text = "\n".join(communities_list)
+            if i[3]:
+                communities_list["tg"].append(f" 🌐 {i[0]}")
+            else:
+                communities_list["vk"].append(f" 🌐 {i[0]}")
+        communities_text = "Вконтакте:\n"
+        communities_text += "\n".join(communities_list["vk"])
+        communities_text += "\n\nTelegram:\n"
+        communities_text += "\n".join(communities_list["tg"])
         await bot.send_message(
             message.chat.id,
             f"На данный момент нам доступны сообщества:\n\n{communities_text}",
