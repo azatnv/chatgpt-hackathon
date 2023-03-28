@@ -13,11 +13,18 @@ def run(bot):
         await bot.send_message(
             message.chat.id,
             """
-            Добро пожаловать! 
+            🇷🇺 Добро пожаловать! 
 
-    С этого момента все мероприятия с тобой в удобной форме.
+С этого момента все мероприятия с тобой в удобной форме.
 
-    Наши партнеры: [Gigaschool](https://gigaschool.ru/)""",
+Наши партнеры: [Napoleon IT](https://www.napoleonit.com/)
+
+
+🇬🇧 Good to see you!
+            
+All the ITMO events are now consolidated with us, making it more convenient for you.
+
+Partners: [Napoleon IT](https://www.napoleonit.com/)""",
             reply_markup=init_keyboard,
             parse_mode="Markdown",
             disable_web_page_preview=True
