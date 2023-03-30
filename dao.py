@@ -183,18 +183,17 @@ def set_user_last_date(user_id, username, counter=""):
     cur = conn.cursor()
     cur.execute(f"UPDATE users SET user_last_date = TIMESTAMP '{datetime.datetime.now()}' WHERE user_id = {user_id}")
     cur.execute(f"UPDATE users SET username = '{username}' WHERE user_id = {user_id}")
-    match counter:
-        case "event":
+    if counter == "event":
             cur.execute(f"SELECT event_clicks FROM users WHERE user_id = {user_id}")
             rows = cur.fetchall()
             count = rows[0][0]
             cur.execute(f"UPDATE users SET event_clicks = '{count + 1}' WHERE user_id = {user_id}")
-        case "community":
+    elif counter == "community":
             cur.execute(f"SELECT community_clicks FROM users WHERE user_id = {user_id}")
             rows = cur.fetchall()
             count = rows[0][0]
             cur.execute(f"UPDATE users SET community_clicks = '{count + 1}' WHERE user_id = {user_id}")
-        case "calendar":
+    elif counter == "calendar":
             cur.execute(f"SELECT calendar_clicks FROM users WHERE user_id = {user_id}")
             rows = cur.fetchall()
             count = rows[0][0]
