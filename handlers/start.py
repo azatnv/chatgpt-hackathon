@@ -1,5 +1,5 @@
 from inline_buttons import init_keyboard
-from dao import set_user_start_date
+from dao import set_user_start_date, log_action
 from utils import UserStates
 
 
@@ -7,6 +7,7 @@ def run(bot):
     @bot.message_handler(commands=["start"])
     async def send_welcome(message):
         set_user_start_date(message.from_user.id, message.from_user.username)
+        log_action("start", message.from_user.id, message.from_user.username)
 
         await bot.set_state(message.from_user.id, UserStates.default, message.chat.id)
         await bot.delete_message(message.chat.id, message.message_id)

@@ -221,3 +221,19 @@ def set_user_last_date(user_id, username, counter=""):
             cur.execute(f"UPDATE users SET calendar_clicks = '{count + 1}' WHERE user_id = {user_id}")
     conn.commit()
     conn.close()
+
+
+def log_action(action, user_id, username):
+    conn = psycopg2.connect(
+        database=DATABASE_NAME,
+        user=DATABASE_USER,
+        password=DATABASE_PASSWORD,
+        host=DATABASE_HOST,
+        port=DATABASE_PORT
+    )
+    cur = conn.cursor()
+    cur.execute(f"INSERT INTO users_log (timestamp, action, user_id, username) "
+                f"VALUES ('{datetime.datetime.now()}', '{action}', {user_id}, '{username}')")
+
+    conn.commit()
+    conn.close()

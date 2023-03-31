@@ -1,5 +1,5 @@
 from inline_buttons.inline_buttons import menu_keyboard
-from dao import set_user_last_date, get_actual_events, all_groups
+from dao import set_user_last_date, get_actual_events, all_groups, log_action
 from utils import UserStates, get_event_list_message_text
 from telebot import types
 
@@ -8,6 +8,7 @@ def run(bot):
     @bot.message_handler(regexp=r"^Меню")
     async def menu(message):
         set_user_last_date(message.from_user.id, message.from_user.username)
+        log_action("menu_button", message.from_user.id, message.from_user.username)
 
         await bot.set_state(message.from_user.id, UserStates.default, message.chat.id)
         await bot.delete_message(message.chat.id, message.message_id)
@@ -20,6 +21,7 @@ def run(bot):
 
     @bot.callback_query_handler(func=lambda call: call.data == str(UserStates.default))
     async def menu_query_handler(call):
+        log_action("menu_button", call.from_user.id, call.from_user.username)
         await bot.set_state(call.from_user.id, UserStates.default, call.message.chat.id)
         await bot.delete_message(call.message.chat.id, call.message.message_id)
         await bot.answer_callback_query(call.id)
@@ -33,6 +35,7 @@ def run(bot):
     @bot.message_handler(regexp=r"^Мероприятия")
     async def get_events(message):
         set_user_last_date(message.from_user.id, message.from_user.username, "event")
+        log_action("event_button", message.from_user.id, message.from_user.username)
 
         events = get_actual_events()
 
@@ -61,6 +64,7 @@ def run(bot):
     @bot.message_handler(regexp=r"^Источники мероприятий")
     async def send_groups_info(message):
         set_user_last_date(message.from_user.id, message.from_user.username, "community")
+        log_action("community_button", message.from_user.id, message.from_user.username)
 
         communities = all_groups
         communities_list = []
@@ -78,6 +82,7 @@ def run(bot):
     @bot.message_handler(regexp=r"^Предложить улучшение")
     async def suggest_improvement(message):
         set_user_last_date(message.from_user.id, message.from_user.username)
+        log_action("suggest_button", message.from_user.id, message.from_user.username)
 
         suggest_menu_inline_keyboard = types.InlineKeyboardMarkup()
         suggest_event_source_button = types.InlineKeyboardButton("Посоветовать источник",
