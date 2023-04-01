@@ -1,13 +1,15 @@
 import re
 
-from inline_buttons.inline_buttons import menu_keyboard
+from keyboard_buttons import menu_keyboard
 from dao import set_suggested_event_source, set_suggested_functionality
 from utils import UserStates
 
 
 def run(bot):
     @bot.message_handler(func=lambda message: message.text not in ["/start", "/users_count", "Меню", "Мероприятия",
-                                                                   "Источники мероприятий", "Предложить улучшение"])
+                                                                   "Источники мероприятий", "Предложить улучшение",
+                                                                   "/career", "/education", "/sport",
+                                                                   "/culture_and_entertainment", "/business", "/other"])
     async def echo_all(message):
         user_state = await bot.get_state(message.from_user.id, message.chat.id)
         user_id = message.from_user.id

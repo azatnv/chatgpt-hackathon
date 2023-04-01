@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from inline_buttons.inline_buttons import menu_keyboard
+from keyboard_buttons import menu_keyboard
 from dao import set_user_last_date, get_actual_events, get_week_events
 from icalendar import Calendar, Event, vText
 from utils import UserStates

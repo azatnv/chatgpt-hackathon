@@ -1,4 +1,4 @@
-from inline_buttons.inline_buttons import menu_keyboard
+from keyboard_buttons import menu_keyboard
 from dao import get_users_count
 
 

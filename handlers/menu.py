@@ -1,3 +1,6 @@
+from keyboard_buttons import menu_keyboard
+from dao import set_user_last_date, get_actual_events, all_groups, get_actual_events_by_topic
+from utils import UserStates, get_event_list_message_text, state2pre_speech
 from inline_buttons.inline_buttons import menu_keyboard
 from dao import set_user_last_date, get_actual_events, all_groups, log_action
 from utils import UserStates, get_event_list_message_text
@@ -32,10 +35,17 @@ def run(bot):
             reply_markup=menu_keyboard
         )
 
-    @bot.message_handler(regexp=r"^Мероприятия")
+    @bot.message_handler(regexp="^Мероприятия")
     async def get_events(message):
         set_user_last_date(message.from_user.id, message.from_user.username, "event")
         log_action("event_button", message.from_user.id, message.from_user.username)
+        default_state = UserStates.default
+        default_state.name = "default_events_state"
+        await bot.set_state(message.from_user.id, default_state, message.chat.id)
+
+        is_brief_needed = False
+        if {"кратко", "коротко", "бриф", "сводка"} & set(message.text.lower().split()):
+            is_brief_needed = True
 
         events = get_actual_events()
 
@@ -45,13 +55,50 @@ def run(bot):
                                                                              UserStates.add_to_calendar_all))
         menu_inline_button = types.InlineKeyboardButton("Меню", callback_data=str(UserStates.default))
         if len(events) > 4:
-            events_next_page_button = types.InlineKeyboardButton("Далее", callback_data="next_events_page_0")
+            events_next_page_button = types.InlineKeyboardButton("Далее",
+                                                                 callback_data=f"next_events_page_0_{1 if is_brief_needed else 0}")
             events_inline_keyboard.add(events_next_page_button)
             events = events[:4]
         events_inline_keyboard.add(current_week_events_calendar_button, menu_inline_button, row_width=1)
 
-        pre_speech = "Анонсы мероприятий:"
-        event_list = get_event_list_message_text(events)
+        pre_speech = state2pre_speech[default_state.name]
+        event_list = get_event_list_message_text(events, brief=is_brief_needed)
+        await bot.send_message(
+            message.chat.id,
+            f"{pre_speech}"
+            f"{''.join(event_list)}",
+            parse_mode="HTML",
+            disable_web_page_preview=True,
+            reply_markup=events_inline_keyboard
+        )
+
+    @bot.message_handler(commands=["career", "education", "sport", "culture_and_entertainment", "business", "other"])
+    async def get_events_by_topic(message):
+        set_user_last_date(message.from_user.id, message.from_user.username, "event")
+        topic_state = UserStates.topic
+        topic_state.name = message.text.replace("/", "")
+        await bot.set_state(message.from_user.id, topic_state, message.chat.id)
+
+        is_brief_needed = False
+        if {"кратко", "коротко", "бриф", "сводка"} & set(message.text.lower().split()):
+            is_brief_needed = True
+
+        events = get_actual_events_by_topic(topic_state.name)
+
+        events_inline_keyboard = types.InlineKeyboardMarkup()
+        current_week_events_calendar_button = types.InlineKeyboardButton("Добавить все в календарь",
+                                                                         callback_data=str(
+                                                                             UserStates.add_to_calendar_all))
+        menu_inline_button = types.InlineKeyboardButton("Меню", callback_data=str(UserStates.default))
+        if len(events) > 4:
+            events_next_page_button = types.InlineKeyboardButton("Далее",
+                                                                 callback_data=f"next_events_page_0_{1 if is_brief_needed else 0}")
+            events_inline_keyboard.add(events_next_page_button)
+            events = events[:4]
+        events_inline_keyboard.add(current_week_events_calendar_button, menu_inline_button, row_width=1)
+
+        pre_speech = state2pre_speech[topic_state.name]
+        event_list = get_event_list_message_text(events, brief=is_brief_needed)
         await bot.send_message(
             message.chat.id,
             f"{pre_speech}"
@@ -67,11 +114,16 @@ def run(bot):
         log_action("community_button", message.from_user.id, message.from_user.username)
 
         communities = all_groups
-        communities_list = []
+        communities_list = {"vk": [], "tg": []}
         for i in communities:
-            communities_text = f" 🌐 {i[0]}"
-            communities_list.append(communities_text)
-        communities_text = "\n".join(communities_list)
+            if i[3]:
+                communities_list["tg"].append(f" 🌐 {i[0]}")
+            else:
+                communities_list["vk"].append(f" 🌐 {i[0]}")
+        communities_text = "Вконтакте:\n"
+        communities_text += "\n".join(communities_list["vk"])
+        communities_text += "\n\nTelegram:\n"
+        communities_text += "\n".join(communities_list["tg"])
         await bot.send_message(
             message.chat.id,
             f"На данный момент нам доступны сообщества:\n\n{communities_text}",
