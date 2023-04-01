@@ -46,6 +46,16 @@ state2pre_speech = {
     "other": "Другие мероприятия:",
 }
 
+num_to_weekday_name = {
+    0: "понедельник",
+    1: "вторник",
+    2: "среда",
+    3: "четверг",
+    4: "пятница",
+    5: "суббота",
+    6: "воскресенье",
+}
+
 
 def get_date_string(date):
     now_day_number = date.weekday()
@@ -106,7 +116,7 @@ def get_event_list_message_text(events, brief=False):
         if not brief:
             event_text = \
                 f"\n\n🦄️ <a href='{post_url}'>{event_title}</a>" \
-                f"\n🗓 {event_date} {event_place}" \
+                f"\n🗓 {num_to_weekday_name[event[2]].capitalize()} {event_place}" \
                 f"\n{event_short_desc}"\
                 f"\n<a href='{event_date_link}'>Добавить в календарь -></a>"
         else:
