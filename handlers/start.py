@@ -1,5 +1,5 @@
 from dao import set_user_start_date, log_action
-from keyboard_buttons import init_keyboard
+from keyboard_buttons import menu_keyboard
 from utils import UserStates
 
 
@@ -26,7 +26,7 @@ def run(bot):
 All the ITMO events are now consolidated with us, making it more convenient for you.
 
 Partners: [Napoleon IT](https://www.napoleonit.com/)""",
-            reply_markup=init_keyboard,
+            reply_markup=menu_keyboard,
             parse_mode="Markdown",
             disable_web_page_preview=True
         )
