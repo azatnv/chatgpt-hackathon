@@ -1,7 +1,5 @@
-from inline_buttons import init_keyboard
 from dao import set_user_start_date, log_action
 from keyboard_buttons import init_keyboard
-from dao import set_user_start_date
 from utils import UserStates
 
 

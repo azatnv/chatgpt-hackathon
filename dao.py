@@ -202,16 +202,8 @@ def set_user_last_date(user_id, username, counter=""):
 
 
 def log_action(action, user_id, username):
-    conn = psycopg2.connect(
-        database=DATABASE_NAME,
-        user=DATABASE_USER,
-        password=DATABASE_PASSWORD,
-        host=DATABASE_HOST,
-        port=DATABASE_PORT
-    )
     cur = conn.cursor()
     cur.execute(f"INSERT INTO users_log (timestamp, action, user_id, username) "
                 f"VALUES ('{datetime.datetime.now()}', '{action}', {user_id}, '{username}')")
 
     conn.commit()
-    conn.close()

@@ -1,9 +1,6 @@
 from keyboard_buttons import menu_keyboard
-from dao import set_user_last_date, get_actual_events, all_groups, get_actual_events_by_topic
+from dao import set_user_last_date, get_actual_events, all_groups, log_action, get_actual_events_by_topic
 from utils import UserStates, get_event_list_message_text, state2pre_speech
-from inline_buttons.inline_buttons import menu_keyboard
-from dao import set_user_last_date, get_actual_events, all_groups, log_action
-from utils import UserStates, get_event_list_message_text
 from telebot import types
 
 

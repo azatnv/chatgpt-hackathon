@@ -7,6 +7,7 @@ from utils import UserStates
 
 def run(bot):
     @bot.message_handler(func=lambda message: message.text not in ["/start", "/users_count", "Меню", "Мероприятия",
+                                                                   "Мероприятия кратко",
                                                                    "Источники мероприятий", "Предложить улучшение",
                                                                    "/career", "/education", "/sport",
                                                                    "/culture_and_entertainment", "/business", "/other"])
