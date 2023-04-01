@@ -8,6 +8,8 @@ events_button = types.KeyboardButton("Мероприятия")
 event_sources_button = types.KeyboardButton("Источники мероприятий")
 # предложить как улучшить бота
 suggest_improvement_button = types.KeyboardButton("Предложить улучшение")
+# краткая сводка на неделю
+brief_description_button = types.KeyboardButton("Сводка на неделю")
 
 
 menu_keyboard = types.ReplyKeyboardMarkup(
@@ -15,11 +17,11 @@ menu_keyboard = types.ReplyKeyboardMarkup(
     one_time_keyboard=True
 )
 menu_keyboard.\
-    add(events_button).\
+    add(events_button, brief_description_button).\
     add(event_sources_button, suggest_improvement_button)
 
 init_keyboard = types.ReplyKeyboardMarkup(
     resize_keyboard=True,
     one_time_keyboard=True
 )
-init_keyboard.add(events_button).add(menu_button)
+init_keyboard.add(events_button, brief_description_button).add(menu_button)
