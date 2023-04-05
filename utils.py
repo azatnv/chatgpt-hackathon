@@ -92,7 +92,8 @@ def get_event_list_message_text(events, brief=False):
     for i, event in enumerate(events, start=1):
         post_url = event[0]
         event_title = event[1]
-        event_date = get_date_string(event[2])
+        raw_datetime = event[2]
+        event_date = get_date_string(raw_datetime)
         event_place = ""
         if event[3]:
             if "онлайн" in event[3].lower() or "online" in event[3].lower():
@@ -110,7 +111,7 @@ def get_event_list_message_text(events, brief=False):
                 f"\n{event_short_desc}"\
                 f"\n<a href='{event_date_link}'>Добавить в календарь -></a>"
         else:
-            event_text = f"\n\n🗓 {event_date} {event_place} - 🦄️ <a href='{post_url}'>{event_title}</a>"
+            event_text = f"\n\n🗓 {days_map[raw_datetime.weekday()]} {event_place} - 🦄️ <a href='{post_url}'>{event_title}</a>"
         event_list.append(event_text)
     return event_list
 
