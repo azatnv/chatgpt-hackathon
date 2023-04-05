@@ -109,7 +109,7 @@ def run(bot):
                                                                    callback_data="settings_notifications")
         settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
                                                                  callback_data="settings_communities")
-        settings_cancel_button = types.InlineKeyboardButton("< Отмена",
+        settings_cancel_button = types.InlineKeyboardButton("< В меню",
                                                             callback_data="settings_cancel")
 
         settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,
@@ -131,7 +131,7 @@ def run(bot):
                                                                    callback_data="settings_notifications")
         settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
                                                                  callback_data="settings_communities")
-        settings_cancel_button = types.InlineKeyboardButton("< Отмена",
+        settings_cancel_button = types.InlineKeyboardButton("< В меню",
                                                             callback_data="settings_cancel")
 
         settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,

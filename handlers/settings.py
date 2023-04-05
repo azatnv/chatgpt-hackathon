@@ -105,7 +105,7 @@ def run(bot):
                                                                    callback_data="settings_notifications")
         settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
                                                                  callback_data="settings_communities")
-        settings_cancel_button = types.InlineKeyboardButton("< Отмена",
+        settings_cancel_button = types.InlineKeyboardButton("< В меню",
                                                             callback_data="settings_cancel")
         settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,
                                                                     settings_communities_button,
@@ -198,7 +198,7 @@ def run(bot):
                                                                        callback_data="settings_notifications")
             settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
                                                                      callback_data="settings_communities")
-            settings_cancel_button = types.InlineKeyboardButton("< Отмена",
+            settings_cancel_button = types.InlineKeyboardButton("< В меню",
                                                                 callback_data="settings_cancel")
             settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,
                                                                         settings_communities_button,
@@ -287,7 +287,7 @@ def run(bot):
                                                                        callback_data="settings_notifications")
             settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
                                                                      callback_data="settings_communities")
-            settings_cancel_button = types.InlineKeyboardButton("< Отмена",
+            settings_cancel_button = types.InlineKeyboardButton("< В меню",
                                                                 callback_data="settings_cancel")
             settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,
                                                                         settings_communities_button,
@@ -304,6 +304,6 @@ def run(bot):
         await bot.delete_message(call.message.chat.id, call.message.message_id)
         await bot.send_message(
             call.message.chat.id,
-            "Отмена",
+            "Меню",
             reply_markup=menu_keyboard
         )
