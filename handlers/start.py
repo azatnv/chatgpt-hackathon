@@ -1,4 +1,4 @@
-from dao import set_user_start_date, log_action
+from dao import log_action
 from keyboard_buttons import menu_keyboard
 from utils import UserStates
 
@@ -6,7 +6,6 @@ from utils import UserStates
 def run(bot):
     @bot.message_handler(commands=["start"])
     async def send_welcome(message):
-        set_user_start_date(message.from_user.id, message.from_user.username)
         log_action("start", message.from_user.id, message.from_user.username)
 
         await bot.set_state(message.from_user.id, UserStates.default, message.chat.id)

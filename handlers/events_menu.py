@@ -1,6 +1,6 @@
-from dao import log_action, get_actual_events
+from dao import log_action, get_actual_events, get_user_selected_comm
 from keyboard_buttons import menu_keyboard
-from utils import UserStates, state2pre_speech, get_event_list_message_text
+from utils import UserStates, state2pre_speech, get_event_list_message_text, filter_events_by_comm
 from telebot import types
 
 
@@ -18,6 +18,8 @@ def run(bot):
 
         is_brief_needed = False
         events = get_actual_events()
+        user_communities = get_user_selected_comm(call.from_user.id)
+        events = filter_events_by_comm(events, user_communities)
 
         events_inline_keyboard = types.InlineKeyboardMarkup()
         if len(events) > 4:
@@ -50,6 +52,8 @@ def run(bot):
 
         is_brief_needed = True
         events = get_actual_events()
+        user_communities = get_user_selected_comm(call.from_user.id)
+        events = filter_events_by_comm(events, user_communities)
 
         events_inline_keyboard = types.InlineKeyboardMarkup()
         if len(events) > 6:

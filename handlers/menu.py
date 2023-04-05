@@ -1,13 +1,12 @@
 from keyboard_buttons import menu_keyboard
-from dao import set_user_last_date, all_groups, log_action, get_actual_events_by_topic
-from utils import UserStates, get_event_list_message_text, state2pre_speech
+from dao import all_groups, log_action, get_actual_events_by_topic, get_user_selected_comm
+from utils import UserStates, get_event_list_message_text, state2pre_speech, filter_events_by_comm
 from telebot import types
 
 
 def run(bot):
     @bot.message_handler(regexp="^Мероприятия")
     async def get_events(message):
-        set_user_last_date(message.from_user.id, message.from_user.username, "event")
         await bot.set_state(message.from_user.id, UserStates.default, message.chat.id)
         log_action("event_button", message.from_user.id, message.from_user.username)
 
@@ -29,7 +28,6 @@ def run(bot):
     @bot.message_handler(commands=["career", "education", "sport", "culture_and_entertainment", "business", "other"])
     async def get_events_by_topic(message):
         await bot.delete_message(message.chat.id, message.message_id)
-        set_user_last_date(message.from_user.id, message.from_user.username, "event")
         topic_state = UserStates.topic
         topic_state.name = message.text.replace("/", "")
         await bot.set_state(message.from_user.id, topic_state, message.chat.id)
@@ -40,6 +38,8 @@ def run(bot):
             is_brief_needed = True
 
         events = get_actual_events_by_topic(topic_state.name)
+        user_communities = get_user_selected_comm(message.from_user.id)
+        events = filter_events_by_comm(events, user_communities)
 
         events_inline_keyboard = types.InlineKeyboardMarkup()
         if len(events) > 4:
@@ -61,7 +61,6 @@ def run(bot):
 
     @bot.message_handler(regexp=r"^Источники мероприятий")
     async def send_groups_info(message):
-        set_user_last_date(message.from_user.id, message.from_user.username, "community")
         await bot.set_state(message.from_user.id, UserStates.default, message.chat.id)
         log_action("community_button", message.from_user.id, message.from_user.username)
 
@@ -85,7 +84,6 @@ def run(bot):
 
     @bot.message_handler(regexp=r"^Предложить улучшение")
     async def suggest_improvement(message):
-        set_user_last_date(message.from_user.id, message.from_user.username)
         await bot.set_state(message.from_user.id, UserStates.default, message.chat.id)
         log_action("suggest_button", message.from_user.id, message.from_user.username)
 
@@ -100,4 +98,23 @@ def run(bot):
             "Подскажите, как нам стать лучше:",
             disable_web_page_preview=True,
             reply_markup=suggest_menu_inline_keyboard
+        )
+
+    @bot.message_handler(regexp="^Настройки")
+    async def get_settings(message):
+        await bot.set_state(message.from_user.id, UserStates.default, message.chat.id)
+        log_action("settings_button", message.from_user.id, message.from_user.username)
+
+        settings_notifications_button = types.InlineKeyboardButton("Уведомления",
+                                                                   callback_data="settings_notifications")
+        settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
+                                                                 callback_data="settings_communities")
+
+        settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,
+                                                                    settings_communities_button, row_width=1)
+
+        await bot.send_message(
+            message.chat.id,
+            "Настройки:",
+            reply_markup=settings_inline_keyboard
         )

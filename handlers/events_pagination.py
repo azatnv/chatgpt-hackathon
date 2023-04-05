@@ -2,10 +2,10 @@ import re
 
 from telebot.types import CallbackQuery
 
-from dao import get_actual_events, get_week_events, get_actual_events_by_topic, log_action
-from telebot import types, State
+from dao import get_actual_events, get_actual_events_by_topic, log_action, get_user_selected_comm
+from telebot import types
 
-from utils import get_event_list_message_text, state2pre_speech
+from utils import get_event_list_message_text, state2pre_speech, filter_events_by_comm
 
 
 def run(bot):
@@ -71,30 +71,13 @@ def run(bot):
             events = get_actual_events()
         else:
             events = get_actual_events_by_topic(user_state)
+        user_communities = get_user_selected_comm(call.from_user.id)
+        events = filter_events_by_comm(events, user_communities)
 
         events, events_keyboard, is_brief_needed = change_page(call, events, "_events_page_")
 
         pre_speech = state2pre_speech[user_state]
         event_list = get_event_list_message_text(events, brief=bool(is_brief_needed))
-
-        await bot.delete_message(call.message.chat.id, call.message.message_id)
-        await bot.send_message(
-            call.message.chat.id,
-            f"{pre_speech}"
-            f"{''.join(event_list)}",
-            parse_mode="HTML",
-            disable_web_page_preview=True,
-            reply_markup=types.InlineKeyboardMarkup(events_keyboard)
-        )
-
-    @bot.callback_query_handler(func=lambda call: "_pushevents_page_" in call.data)
-    async def select_push_page_event_query_handler(call):
-        await bot.answer_callback_query(call.id)
-        events = get_week_events()
-        events, events_keyboard, _ = change_page(call, events, "_pushevents_page_")
-
-        pre_speech = "Я подготовил для тебя мероприятия на ближайшую неделю:"
-        event_list = get_event_list_message_text(events)
 
         await bot.delete_message(call.message.chat.id, call.message.message_id)
         await bot.send_message(
