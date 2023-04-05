@@ -47,6 +47,16 @@ state2pre_speech = {
 }
 
 
+tag_id2text = {
+    1: "Карьера",
+    2: "Образование",
+    3: "Спорт",
+    4: "Культура",
+    5: "Другое",
+    6: "Бизнес",
+}
+
+
 def get_date_string(date):
     now_day_number = date.weekday()
     short_str_day = days_map[now_day_number]
@@ -116,11 +126,32 @@ def get_event_list_message_text(events, brief=False):
     return event_list
 
 
+def filter_events_by_comm(events, communities):
+    filtered_events = list()
+    if len(communities) != 0:
+        for event in events:
+            if event[6] in communities:
+                filtered_events.append(event)
+    else:
+        filtered_events = events
+
+    return filtered_events
+
+
+def list_to_pg_array_text(data):
+    data_formatted = list()
+    for i in data:
+        data_formatted.append(f"'{i}'")
+    return ','.join(data_formatted)
+
+
+def list_to_pg_array_int(data):
+    return ','.join(str(x) for x in data)
+
+
 class UserStates(StatesGroup):
     default = State()
     suggest_source = State()
     suggest_functionality = State()
-    calendar_selection = State()
     add_to_calendar_all = State()
-    add_to_calendar_week = State()
     topic = State()

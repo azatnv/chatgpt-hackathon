@@ -1,1 +1,1 @@
-from .keyboard_buttons import init_keyboard, menu_keyboard
+from .keyboard_buttons import menu_keyboard

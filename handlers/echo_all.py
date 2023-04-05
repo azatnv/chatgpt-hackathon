@@ -7,7 +7,8 @@ from utils import UserStates
 
 def run(bot):
     @bot.message_handler(func=lambda message: message.text not in ["/start", "/users_count", "Меню", "Мероприятия",
-                                                                   "Источники мероприятий", "Предложить улучшение",
+                                                                   "Мероприятия кратко", "Источники мероприятий",
+                                                                   "Предложить улучшение", "Настройки",
                                                                    "/career", "/education", "/sport",
                                                                    "/culture_and_entertainment", "/business", "/other"])
     async def echo_all(message):

@@ -2,15 +2,13 @@ import os
 import tempfile
 
 from keyboard_buttons import menu_keyboard
-from dao import set_user_last_date, get_actual_events, get_week_events
+from dao import get_actual_events, get_user_selected_comm
 from icalendar import Calendar, Event, vText
-from utils import UserStates
+from utils import UserStates, filter_events_by_comm
 
 
 def run(bot):
     async def add_to_calendar(events, call):
-        set_user_last_date(call.from_user.id, call.from_user.username, "calendar")
-
         event_list_add = list()
         for event in events:
             post_url = event[0]
@@ -56,9 +54,6 @@ def run(bot):
     @bot.callback_query_handler(func=lambda call: call.data == str(UserStates.add_to_calendar_all))
     async def add_to_calendar_all(call):
         events = get_actual_events()
-        await add_to_calendar(events, call)
-
-    @bot.callback_query_handler(func=lambda call: call.data == str(UserStates.add_to_calendar_week))
-    async def add_to_calendar_week(call):
-        events = get_week_events()
+        user_communities = get_user_selected_comm(call.from_user.id)
+        events = filter_events_by_comm(events, user_communities)
         await add_to_calendar(events, call)

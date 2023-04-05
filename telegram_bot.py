@@ -21,5 +21,4 @@ try:
         asyncio.run(bot.polling())
 
 except Exception as e:
-    print(f"Error occured: {e}")
-
+    print(f"Error occurred: {e}")
