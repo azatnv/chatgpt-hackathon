@@ -109,12 +109,37 @@ def run(bot):
                                                                    callback_data="settings_notifications")
         settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
                                                                  callback_data="settings_communities")
+        settings_cancel_button = types.InlineKeyboardButton("< Отмена",
+                                                            callback_data="settings_cancel")
 
         settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,
-                                                                    settings_communities_button, row_width=1)
+                                                                    settings_communities_button,
+                                                                    settings_cancel_button, row_width=1)
 
         await bot.send_message(
             message.chat.id,
+            "Настройки:",
+            reply_markup=settings_inline_keyboard
+        )
+
+    @bot.callback_query_handler(func=lambda call: "back_to_settings" == call.data)
+    async def back_to_settings_query_handler(call):
+        await bot.answer_callback_query(call.id)
+        await bot.delete_message(call.message.chat.id, call.message.message_id)
+
+        settings_notifications_button = types.InlineKeyboardButton("Уведомления",
+                                                                   callback_data="settings_notifications")
+        settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
+                                                                 callback_data="settings_communities")
+        settings_cancel_button = types.InlineKeyboardButton("< Отмена",
+                                                            callback_data="settings_cancel")
+
+        settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,
+                                                                    settings_communities_button,
+                                                                    settings_cancel_button, row_width=1)
+
+        await bot.send_message(
+            call.message.chat.id,
             "Настройки:",
             reply_markup=settings_inline_keyboard
         )

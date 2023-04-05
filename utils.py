@@ -127,9 +127,12 @@ def get_event_list_message_text(events, brief=False):
 
 def filter_events_by_comm(events, communities):
     filtered_events = list()
-    for event in events:
-        if event[6] in communities:
-            filtered_events.append(event)
+    if len(communities) != 0:
+        for event in events:
+            if event[6] in communities:
+                filtered_events.append(event)
+    else:
+        filtered_events = events
 
     return filtered_events
 

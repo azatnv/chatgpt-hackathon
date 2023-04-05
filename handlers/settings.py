@@ -20,9 +20,12 @@ def run(bot):
                                                                    callback_data="notifications_schedule")
         notifications_topic_button = types.InlineKeyboardButton("Категории",
                                                                 callback_data="notifications_topic")
+        back_to_settings_button = types.InlineKeyboardButton("< Назад",
+                                                             callback_data="back_to_settings")
 
         notifications_inline_keyboard = types.InlineKeyboardMarkup().add(notifications_schedule_button,
-                                                                         notifications_topic_button, row_width=1)
+                                                                         notifications_topic_button,
+                                                                         back_to_settings_button, row_width=1)
 
         await bot.send_message(
             call.message.chat.id,
@@ -72,37 +75,46 @@ def run(bot):
             set_push_interval(call.from_user.id, 1)
             await bot.send_message(
                 call.message.chat.id,
-                "Уведомления будут приходить ежедневно",
-                reply_markup=menu_keyboard
+                "Уведомления будут приходить ежедневно"
             )
         if n_button == 2:
             set_push_interval(call.from_user.id, 3)
             await bot.send_message(
                 call.message.chat.id,
-                "Уведомления будут приходить каждые 3 дня",
-                reply_markup=menu_keyboard
+                "Уведомления будут приходить каждые 3 дня"
             )
         if n_button == 3:
             set_push_interval(call.from_user.id, 7)
             await bot.send_message(
                 call.message.chat.id,
-                "Уведомления будут приходить каждую неделю",
-                reply_markup=menu_keyboard
+                "Уведомления будут приходить каждую неделю"
             )
         if n_button == 4:
             set_push_interval(call.from_user.id, 14)
             await bot.send_message(
                 call.message.chat.id,
-                "Уведомления будут приходить раз в 2 недели",
-                reply_markup=menu_keyboard
+                "Уведомления будут приходить раз в 2 недели"
             )
         if n_button == 5:
             set_push_interval(call.from_user.id, 0)
             await bot.send_message(
                 call.message.chat.id,
-                "Уведомления отключены",
-                reply_markup=menu_keyboard
+                "Уведомления отключены"
             )
+        settings_notifications_button = types.InlineKeyboardButton("Уведомления",
+                                                                   callback_data="settings_notifications")
+        settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
+                                                                 callback_data="settings_communities")
+        settings_cancel_button = types.InlineKeyboardButton("< Отмена",
+                                                            callback_data="settings_cancel")
+        settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,
+                                                                    settings_communities_button,
+                                                                    settings_cancel_button, row_width=1)
+        await bot.send_message(
+            call.message.chat.id,
+            "Настройки:",
+            reply_markup=settings_inline_keyboard
+        )
 
     @bot.callback_query_handler(func=lambda call: "notifications_topic" == call.data)
     async def notifications_topic_query_handler(call):
@@ -180,8 +192,21 @@ def run(bot):
             await bot.delete_message(call.message.chat.id, call.message.message_id)
             await bot.send_message(
                 call.message.chat.id,
-                "Категории сохранены",
-                reply_markup=menu_keyboard
+                "Категории сохранены"
+            )
+            settings_notifications_button = types.InlineKeyboardButton("Уведомления",
+                                                                       callback_data="settings_notifications")
+            settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
+                                                                     callback_data="settings_communities")
+            settings_cancel_button = types.InlineKeyboardButton("< Отмена",
+                                                                callback_data="settings_cancel")
+            settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,
+                                                                        settings_communities_button,
+                                                                        settings_cancel_button, row_width=1)
+            await bot.send_message(
+                call.message.chat.id,
+                "Настройки:",
+                reply_markup=settings_inline_keyboard
             )
 
     @bot.callback_query_handler(func=lambda call: "settings_communities" == call.data)
@@ -256,6 +281,29 @@ def run(bot):
             await bot.delete_message(call.message.chat.id, call.message.message_id)
             await bot.send_message(
                 call.message.chat.id,
-                "Источники мероприятий сохранены",
-                reply_markup=menu_keyboard
+                "Источники мероприятий сохранены"
             )
+            settings_notifications_button = types.InlineKeyboardButton("Уведомления",
+                                                                       callback_data="settings_notifications")
+            settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
+                                                                     callback_data="settings_communities")
+            settings_cancel_button = types.InlineKeyboardButton("< Отмена",
+                                                                callback_data="settings_cancel")
+            settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,
+                                                                        settings_communities_button,
+                                                                        settings_cancel_button, row_width=1)
+            await bot.send_message(
+                call.message.chat.id,
+                "Настройки:",
+                reply_markup=settings_inline_keyboard
+            )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "settings_cancel")
+    async def settings_cancel_query_handler(call):
+        await bot.answer_callback_query(call.id)
+        await bot.delete_message(call.message.chat.id, call.message.message_id)
+        await bot.send_message(
+            call.message.chat.id,
+            "Отмена",
+            reply_markup=menu_keyboard
+        )

@@ -24,6 +24,8 @@ async def push_events(user_id):
     if push_interval != 0 and next_push_date.date() == datetime.date.today():
         try:
             user_tags = get_user_push_tags(user_id)
+            if len(user_tags) == 0:
+                user_tags = [1, 2, 3, 4, 5, 6]
             events = get_actual_events_by_topic_list(user_tags)
             user_communities = get_user_selected_comm(user_id)
             events = filter_events_by_comm(events, user_communities)
