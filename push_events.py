@@ -21,7 +21,7 @@ logging.getLogger('asyncio').setLevel(logging.CRITICAL)
 async def push_events(user_id):
     push_interval = get_push_interval(user_id)
     next_push_date = get_next_push_date(user_id)
-    if push_interval != 0 and next_push_date.date() == datetime.date.today():
+    if push_interval != 0 and next_push_date.date() <= datetime.date.today():
         try:
             user_tags = get_user_push_tags(user_id)
             if len(user_tags) == 0:
