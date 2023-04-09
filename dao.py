@@ -49,7 +49,8 @@ def get_events_from_date_interval(from_date, to_date):
                 post.event_place,
                 post.event_short_desc,
                 post.event_picture_url,
-                community.comm_name
+                community.comm_name,
+                post.event_duplicates
             FROM post
             JOIN community ON post.comm_id = community.comm_id
             WHERE post.event_date >= '{str(from_date)}' and post.event_date <= '{str(to_date)}'
@@ -72,7 +73,8 @@ def get_actual_events():
                 post.event_place,
                 post.event_short_desc,
                 post.event_picture_url,
-                community.comm_name
+                community.comm_name,
+                post.event_duplicates
             FROM post
             JOIN community ON post.comm_id = community.comm_id
             WHERE post.event_date >= '{str(datetime.datetime.now())}' 
@@ -97,7 +99,8 @@ def get_actual_events_by_topic(topic_name: str):
                     post.event_place,
                     post.event_short_desc,
                     post.event_picture_url,
-                    community.comm_name
+                    community.comm_name,
+                    post.event_duplicates
                 FROM tags
                 JOIN post ON tags.comm_id = post.comm_id AND tags.post_id = post.post_id
                 JOIN community ON post.comm_id = community.comm_id
@@ -123,7 +126,8 @@ def get_actual_events_by_topic_list(topics_list: list):
                     post.event_place,
                     post.event_short_desc,
                     post.event_picture_url,
-                    community.comm_name
+                    community.comm_name,
+                    post.event_duplicates
                 FROM tags
                 JOIN post ON tags.comm_id = post.comm_id AND tags.post_id = post.post_id
                 JOIN community ON post.comm_id = community.comm_id

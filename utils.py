@@ -98,6 +98,7 @@ def make_google_cal_url(event_title, event_date, event_place, comm_name, event_s
 
 
 def get_event_list_message_text(events, brief=False):
+    events = mark_if_popular_event(events)
     event_list = []
     for i, event in enumerate(events, start=1):
         post_url = event[0]
@@ -147,6 +148,23 @@ def list_to_pg_array_text(data):
 
 def list_to_pg_array_int(data):
     return ','.join(str(x) for x in data)
+
+
+def mark_if_popular_event(events):
+    for i, event in enumerate(events, start=0):
+        duplicates = event[7]
+        if duplicates == 0:
+            continue
+        if duplicates >= 3:
+            n_fire = 3
+        else:
+            n_fire = duplicates
+        event = list(event)
+        event[1] += " " + "🔥" * n_fire
+        event = tuple(event)
+        events[i] = event
+
+    return events
 
 
 class UserStates(StatesGroup):
