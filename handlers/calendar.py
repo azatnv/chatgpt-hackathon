@@ -2,13 +2,14 @@ import os
 import tempfile
 
 from keyboard_buttons import menu_keyboard
-from dao import get_actual_events, get_user_selected_comm
+from dao import get_actual_events, get_user_selected_comm, get_user_push_tags, get_actual_events_by_topic_list, \
+    log_action
 from icalendar import Calendar, Event, vText
-from utils import UserStates, filter_events_by_comm
+from utils import filter_events_by_comm
 
 
 def run(bot):
-    async def add_to_calendar(events, call):
+    async def add_to_calendar(events, message):
         event_list_add = list()
         for event in events:
             post_url = event[0]
@@ -32,28 +33,40 @@ def run(bot):
             cal_event.add('location', vText(event[2]))
             cal_event.add('description', event[3])
             cal.add_component(cal_event)
-        await bot.answer_callback_query(
-            call.id,
-            "Мероприятия добавлены"
-        )
+
         await bot.send_message(
-            call.message.chat.id,
+            message.chat.id,
             "Загрузите файл ICS, чтобы добавить в календарь.\n"
             "Также можно добавить каждое мероприятие отдельно, нажав на ссылки в сообщении.",
             disable_web_page_preview=True,
             reply_markup=menu_keyboard
         )
         directory = tempfile.mkdtemp()
-        f = open(os.path.join(directory, f'Мероприятия - {call.from_user.username}.ics'), 'wb+')
+        f = open(os.path.join(directory, f'Мероприятия - {message.from_user.username}.ics'), 'wb+')
         f.write(cal.to_ical())
         f.close()
-        with open(os.path.join(directory, f'Мероприятия - {call.from_user.username}.ics'), 'rb') as f:
-            await bot.send_document(call.message.chat.id, f)
+        with open(os.path.join(directory, f'Мероприятия - {message.from_user.username}.ics'), 'rb') as f:
+            await bot.send_document(message.chat.id, f)
         f.close()
 
-    @bot.callback_query_handler(func=lambda call: call.data == str(UserStates.add_to_calendar_all))
-    async def add_to_calendar_all(call):
-        events = get_actual_events()
-        user_communities = get_user_selected_comm(call.from_user.id)
+    @bot.message_handler(commands=["ics"])
+    async def add_to_calendar_all(message):
+        await bot.delete_message(message.chat.id, message.message_id)
+
+        log_action("add_to_calendar", message.from_user.id, message.from_user.username)
+
+        user_tags = get_user_push_tags(message.from_user.id)
+        if len(user_tags) == 0:
+            user_tags = [1, 2, 3, 4, 5, 6]
+        events = get_actual_events_by_topic_list(user_tags)
+        user_communities = get_user_selected_comm(message.from_user.id)
         events = filter_events_by_comm(events, user_communities)
-        await add_to_calendar(events, call)
+
+        if len(events) == 0:
+            await bot.send_message(
+                message.chat.id,
+                "По указанным настройкам мероприятия не найдены!",
+                reply_markup=menu_keyboard
+            )
+        else:
+            await add_to_calendar(events, message)

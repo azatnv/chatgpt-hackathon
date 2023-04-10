@@ -9,30 +9,6 @@ from utils import tag_id2text
 
 
 def run(bot):
-    @bot.callback_query_handler(func=lambda call: "settings_notifications" == call.data)
-    async def settings_notifications_query_handler(call):
-        await bot.answer_callback_query(call.id)
-        await bot.delete_message(call.message.chat.id, call.message.message_id)
-
-        log_action("settings_notifications", call.from_user.id, call.from_user.username)
-
-        notifications_schedule_button = types.InlineKeyboardButton("Расписание",
-                                                                   callback_data="notifications_schedule")
-        notifications_topic_button = types.InlineKeyboardButton("Категории",
-                                                                callback_data="notifications_topic")
-        back_to_settings_button = types.InlineKeyboardButton("< Назад",
-                                                             callback_data="back_to_settings")
-
-        notifications_inline_keyboard = types.InlineKeyboardMarkup().add(notifications_schedule_button,
-                                                                         notifications_topic_button,
-                                                                         back_to_settings_button, row_width=1)
-
-        await bot.send_message(
-            call.message.chat.id,
-            "Настройка уведомлений:",
-            reply_markup=notifications_inline_keyboard
-        )
-
     @bot.callback_query_handler(func=lambda call: "notifications_schedule" == call.data)
     async def notifications_schedule_query_handler(call):
         await bot.answer_callback_query(call.id)
@@ -101,14 +77,20 @@ def run(bot):
                 call.message.chat.id,
                 "Уведомления отключены"
             )
-        settings_notifications_button = types.InlineKeyboardButton("Уведомления",
-                                                                   callback_data="settings_notifications")
-        settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
+        notifications_schedule_button = types.InlineKeyboardButton("Уведомления 🔔",
+                                                                   callback_data="notifications_schedule")
+        notifications_topic_button = types.InlineKeyboardButton("Тематики 🗂",
+                                                                callback_data="notifications_topic")
+        settings_communities_button = types.InlineKeyboardButton("Источники мероприятий 📚",
                                                                  callback_data="settings_communities")
+        commands_info_button = types.InlineKeyboardButton("Посмотреть команды бота ℹ️",
+                                                          callback_data="commands_info")
         settings_cancel_button = types.InlineKeyboardButton("< В меню",
                                                             callback_data="settings_cancel")
-        settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,
+        settings_inline_keyboard = types.InlineKeyboardMarkup().add(notifications_schedule_button,
+                                                                    notifications_topic_button,
                                                                     settings_communities_button,
+                                                                    commands_info_button,
                                                                     settings_cancel_button, row_width=1)
         await bot.send_message(
             call.message.chat.id,
@@ -194,14 +176,20 @@ def run(bot):
                 call.message.chat.id,
                 "Категории сохранены"
             )
-            settings_notifications_button = types.InlineKeyboardButton("Уведомления",
-                                                                       callback_data="settings_notifications")
-            settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
+            notifications_schedule_button = types.InlineKeyboardButton("Уведомления 🔔",
+                                                                       callback_data="notifications_schedule")
+            notifications_topic_button = types.InlineKeyboardButton("Тематики 🗂",
+                                                                    callback_data="notifications_topic")
+            settings_communities_button = types.InlineKeyboardButton("Источники мероприятий 📚",
                                                                      callback_data="settings_communities")
+            commands_info_button = types.InlineKeyboardButton("Посмотреть команды бота ℹ️",
+                                                              callback_data="commands_info")
             settings_cancel_button = types.InlineKeyboardButton("< В меню",
                                                                 callback_data="settings_cancel")
-            settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,
+            settings_inline_keyboard = types.InlineKeyboardMarkup().add(notifications_schedule_button,
+                                                                        notifications_topic_button,
                                                                         settings_communities_button,
+                                                                        commands_info_button,
                                                                         settings_cancel_button, row_width=1)
             await bot.send_message(
                 call.message.chat.id,
@@ -283,20 +271,56 @@ def run(bot):
                 call.message.chat.id,
                 "Источники мероприятий сохранены"
             )
-            settings_notifications_button = types.InlineKeyboardButton("Уведомления",
-                                                                       callback_data="settings_notifications")
-            settings_communities_button = types.InlineKeyboardButton("Источники мероприятий",
+            notifications_schedule_button = types.InlineKeyboardButton("Уведомления 🔔",
+                                                                       callback_data="notifications_schedule")
+            notifications_topic_button = types.InlineKeyboardButton("Тематики 🗂",
+                                                                    callback_data="notifications_topic")
+            settings_communities_button = types.InlineKeyboardButton("Источники мероприятий 📚",
                                                                      callback_data="settings_communities")
+            commands_info_button = types.InlineKeyboardButton("Посмотреть команды бота ℹ️",
+                                                              callback_data="commands_info")
             settings_cancel_button = types.InlineKeyboardButton("< В меню",
                                                                 callback_data="settings_cancel")
-            settings_inline_keyboard = types.InlineKeyboardMarkup().add(settings_notifications_button,
+            settings_inline_keyboard = types.InlineKeyboardMarkup().add(notifications_schedule_button,
+                                                                        notifications_topic_button,
                                                                         settings_communities_button,
+                                                                        commands_info_button,
                                                                         settings_cancel_button, row_width=1)
             await bot.send_message(
                 call.message.chat.id,
                 "Настройки:",
                 reply_markup=settings_inline_keyboard
             )
+
+    @bot.callback_query_handler(func=lambda call: "commands_info" == call.data)
+    async def commands_info_query_handler(call):
+        await bot.answer_callback_query(call.id)
+        await bot.delete_message(call.message.chat.id, call.message.message_id)
+
+        log_action("commands_info", call.from_user.id, call.from_user.username)
+
+        notifications_schedule_button = types.InlineKeyboardButton("< Назад", callback_data="back_to_settings")
+        back_to_settings_keyboard = types.InlineKeyboardMarkup().add(notifications_schedule_button)
+        await bot.send_message(
+            call.message.chat.id,
+            """
+Мероприятия по тематикам:
+🗂 Все темы - /all
+🧠 Образование - /edu
+💵 Бизнес, инновации - /money
+📈 Карьера - /career
+💃 Развлечения - /fun
+⚽️ Спорт - /sport
+👀 Остальное - /other
+
+Вывести в виде недели - /brief
+
+Мы советуем добавлять мероприятия в календарь по ссылке, чтобы точно не забыть❗
+
+Добавить все мероприятия в календарь в формате .ICS - /ics
+            """,
+            reply_markup=back_to_settings_keyboard
+        )
 
     @bot.callback_query_handler(func=lambda call: call.data == "settings_cancel")
     async def settings_cancel_query_handler(call):

@@ -6,11 +6,9 @@ from utils import UserStates
 
 
 def run(bot):
-    @bot.message_handler(func=lambda message: message.text not in ["/start", "/users_count", "Меню", "Мероприятия",
-                                                                   "Мероприятия кратко", "Источники мероприятий",
-                                                                   "Предложить улучшение", "Настройки",
-                                                                   "/career", "/education", "/sport",
-                                                                   "/culture_and_entertainment", "/business", "/other"])
+    @bot.message_handler(func=lambda message: message.text not in ["/start", "Мероприятия 👀", "Настройки ⚙️",
+                                                                   "/career", "/edu", "/sport", "/fun", "/money",
+                                                                   "/other", "/all", "/brief", "/users_count"])
     async def echo_all(message):
         user_state = await bot.get_state(message.from_user.id, message.chat.id)
         user_id = message.from_user.id

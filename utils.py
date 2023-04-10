@@ -36,6 +36,15 @@ topics2tag_id = {
     "other": 6,
 }
 
+command2topic = {
+    "/money": "business",
+    "/career": "career",
+    "/edu": "education",
+    "/sport": "sport",
+    "/fun": "culture_and_entertainment",
+    "/other": "other",
+}
+
 state2pre_speech = {
     "default_events_state": "Анонсы всех мероприятий:",
     "business": "Тематика Бизнес:",
@@ -124,6 +133,10 @@ def get_event_list_message_text(events, brief=False):
         else:
             event_text = f"\n\n🗓 {days_map[raw_datetime.weekday()]} {event_place} - 🦄️ <a href='{post_url}'>{event_title}</a>"
         event_list.append(event_text)
+
+    if len(events) == 0:
+        event_list.append("\n\nПо указанным настройкам мероприятия не найдены!")
+
     return event_list
 
 
