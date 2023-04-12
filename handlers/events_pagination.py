@@ -2,27 +2,21 @@ import re
 
 from telebot.types import CallbackQuery
 
-from dao import get_actual_events, get_week_events, get_actual_events_by_topic, log_action
-from telebot import types, State
+from dao import get_actual_events, get_actual_events_by_topic, log_action, get_user_selected_comm
+from telebot import types
 
-from utils import get_event_list_message_text, state2pre_speech
+from utils import get_event_list_message_text, state2pre_speech, filter_events_by_comm
 
 
 def run(bot):
     def change_page(call, events, call_data):
-        is_brief_needed = False
-        if call_data == "_events_page_" or call_data == "_events_by_topic_page_":
-            event_page_data = re.search(f'{call_data}(.+?)_(.+?)', call.data)
-            current_page = int(event_page_data.group(1))
-            is_brief_needed = int(event_page_data.group(2))
-            if is_brief_needed == 0:
-                events_on_page = 4
-            else:
-                events_on_page = 6
-        else:
-            event_page_data = re.search(f'{call_data}(.+?)', call.data)
-            current_page = int(event_page_data.group(1))
+        event_page_data = re.search(f'{call_data}(.+?)_(.+?)', call.data)
+        current_page = int(event_page_data.group(1))
+        is_brief_needed = int(event_page_data.group(2))
+        if is_brief_needed == 0:
             events_on_page = 4
+        else:
+            events_on_page = 6
         command = re.search(f'(.+?){call_data}', call.data).group(1)
         events_keyboard = call.message.reply_markup.keyboard
 
@@ -71,6 +65,8 @@ def run(bot):
             events = get_actual_events()
         else:
             events = get_actual_events_by_topic(user_state)
+        user_communities = get_user_selected_comm(call.from_user.id)
+        events = filter_events_by_comm(events, user_communities)
 
         events, events_keyboard, is_brief_needed = change_page(call, events, "_events_page_")
 
@@ -87,14 +83,21 @@ def run(bot):
             reply_markup=types.InlineKeyboardMarkup(events_keyboard)
         )
 
-    @bot.callback_query_handler(func=lambda call: "_pushevents_page_" in call.data)
-    async def select_push_page_event_query_handler(call):
+    @bot.callback_query_handler(
+        func=lambda call: "_allevents_page_" in call.data)
+    async def select_page_event_query_handler(call: CallbackQuery):
         await bot.answer_callback_query(call.id)
-        events = get_week_events()
-        events, events_keyboard, _ = change_page(call, events, "_pushevents_page_")
 
-        pre_speech = "Я подготовил для тебя мероприятия на ближайшую неделю:"
-        event_list = get_event_list_message_text(events)
+        user_state: str = await bot.get_state(call.from_user.id, call.message.chat.id)
+        if user_state == "default_events_state":
+            events = get_actual_events()
+        else:
+            events = get_actual_events_by_topic(user_state)
+
+        events, events_keyboard, is_brief_needed = change_page(call, events, "_allevents_page_")
+
+        pre_speech = state2pre_speech[user_state]
+        event_list = get_event_list_message_text(events, brief=bool(is_brief_needed))
 
         await bot.delete_message(call.message.chat.id, call.message.message_id)
         await bot.send_message(

@@ -36,6 +36,15 @@ topics2tag_id = {
     "other": 6,
 }
 
+command2topic = {
+    "/money": "business",
+    "/career": "career",
+    "/edu": "education",
+    "/sport": "sport",
+    "/fun": "culture_and_entertainment",
+    "/other": "other",
+}
+
 state2pre_speech = {
     "default_events_state": "Анонсы всех мероприятий:",
     "business": "Тематика Бизнес:",
@@ -44,6 +53,16 @@ state2pre_speech = {
     "sport": "Тематика Спорт:",
     "culture_and_entertainment": "Тематика Культура и Развлечения:",
     "other": "Другие мероприятия:",
+}
+
+
+tag_id2text = {
+    1: "Карьера",
+    2: "Образование",
+    3: "Спорт",
+    4: "Культура",
+    5: "Другое",
+    6: "Бизнес",
 }
 
 
@@ -88,11 +107,13 @@ def make_google_cal_url(event_title, event_date, event_place, comm_name, event_s
 
 
 def get_event_list_message_text(events, brief=False):
+    events = mark_if_popular_event(events)
     event_list = []
     for i, event in enumerate(events, start=1):
         post_url = event[0]
         event_title = event[1]
-        event_date = get_date_string(event[2])
+        raw_datetime = event[2]
+        event_date = get_date_string(raw_datetime)
         event_place = ""
         if event[3]:
             if "онлайн" in event[3].lower() or "online" in event[3].lower():
@@ -110,9 +131,53 @@ def get_event_list_message_text(events, brief=False):
                 f"\n{event_short_desc}"\
                 f"\n<a href='{event_date_link}'>Добавить в календарь -></a>"
         else:
-            event_text = f"\n\n🗓 {event_date} {event_place} - 🦄️ <a href='{post_url}'>{event_title}</a>"
+            event_text = f"\n\n🗓 {days_map[raw_datetime.weekday()]} {event_place} - 🦄️ <a href='{post_url}'>{event_title}</a>"
         event_list.append(event_text)
+
+    if len(events) == 0:
+        event_list.append("\n\nПо указанным настройкам мероприятия не найдены!")
+
     return event_list
+
+
+def filter_events_by_comm(events, communities):
+    filtered_events = list()
+    if len(communities) != 0:
+        for event in events:
+            if event[6] in communities:
+                filtered_events.append(event)
+    else:
+        filtered_events = events
+
+    return filtered_events
+
+
+def list_to_pg_array_text(data):
+    data_formatted = list()
+    for i in data:
+        data_formatted.append(f"'{i}'")
+    return ','.join(data_formatted)
+
+
+def list_to_pg_array_int(data):
+    return ','.join(str(x) for x in data)
+
+
+def mark_if_popular_event(events):
+    for i, event in enumerate(events, start=0):
+        duplicates = event[7]
+        if duplicates == 0:
+            continue
+        if duplicates >= 3:
+            n_fire = 3
+        else:
+            n_fire = duplicates
+        event = list(event)
+        event[1] += " " + "🔥" * n_fire
+        event = tuple(event)
+        events[i] = event
+
+    return events
 
 
 class UserStates(StatesGroup):
@@ -120,5 +185,4 @@ class UserStates(StatesGroup):
     suggest_source = State()
     suggest_functionality = State()
     add_to_calendar_all = State()
-    add_to_calendar_week = State()
     topic = State()
