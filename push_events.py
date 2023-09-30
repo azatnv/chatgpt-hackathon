@@ -55,8 +55,9 @@ async def push_events(user_id):
                     reply_markup=events_inline_keyboard
                 )
                 set_next_push_date(user_id, datetime.datetime.now() + datetime.timedelta(push_interval))
-        except:
-            None
+                print(user_id, " PUSHED")
+        except Exception as exp:
+                print(user_id, f" unable to send a message. {exp}")
 
 
 user_id_list = get_notifications_user_id_list()
