@@ -1,9 +1,9 @@
 #!/bin/bash
-app_dir=/root/itmo-events/chatgpt-hackathon
+app_dir=/root/itmo-chatgpt-hackathon
 
 cd $app_dir
 
-source .venv/bin/activate
+source venv/bin/activate
 
 python push_events.py > $app_dir/cronlogs 2>&1
 
